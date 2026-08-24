@@ -15,7 +15,14 @@ const workflowDraft = (workflow: Workflow): WorkflowDraft => ({
   ...(workflow.description ? { description: workflow.description } : {}),
 });
 
-const stable = (value: unknown): string => JSON.stringify(value, Object.keys(value as object).sort());
+const canonicalize = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.keys(value as Record<string, unknown>).sort().map(key => [key, canonicalize((value as Record<string, unknown>)[key])]));
+  }
+  return value;
+};
+const stable = (value: unknown): string => JSON.stringify(canonicalize(value));
 
 export const n8nApi = {
   async getWorkflows(params?: { limit?: number }): Promise<Page<Workflow>> {
@@ -52,14 +59,6 @@ export const n8nApi = {
 
   async deleteWorkflow(id: string): Promise<Workflow> {
     return controlRequest('delete_workflow', { id });
-  },
-
-  async archiveWorkflow(id: string): Promise<Workflow> {
-    return controlRequest('archive_workflow', { id });
-  },
-
-  async unarchiveWorkflow(id: string): Promise<Workflow> {
-    return controlRequest('unarchive_workflow', { id });
   },
 
   async publishWorkflow(id: string): Promise<Workflow> {
