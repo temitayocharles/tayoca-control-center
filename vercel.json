@@ -1,17 +1,6 @@
 {
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
+  "functions": { "api/**/*.ts": { "maxDuration": 45 } },
   "rewrites": [
-    {
-      "source": "/api/n8n/:path*",
-      "destination": "/api/n8n/proxy"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

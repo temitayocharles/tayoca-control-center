@@ -17,6 +17,8 @@ import {
   Webhook,
   Bell,
   Archive,
+  FilePenLine,
+  Braces,
 } from 'lucide-react';
 import { useSidebar } from '../../contexts/SidebarContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -41,6 +43,13 @@ const navSections: NavSection[] = [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
       { icon: Workflow, label: 'Workflows', path: '/workflows' },
       { icon: Activity, label: 'Executions', path: '/executions' },
+    ],
+  },
+  {
+    title: 'Manage',
+    items: [
+      { icon: FilePenLine, label: 'Site Content', path: '/content' },
+      { icon: Braces, label: 'Workflow Studio', path: '/workflow-studio' },
     ],
   },
   {
@@ -113,7 +122,7 @@ export const Sidebar: React.FC = () => {
         <div className="w-8 h-8 rounded-lg bg-neutral-900 dark:bg-white flex items-center justify-center flex-shrink-0">
           <Workflow size={18} className="text-white dark:text-neutral-900" />
         </div>
-        <span className="text-sm font-semibold text-neutral-900 dark:text-white">n8n Ops</span>
+        <span className="text-sm font-semibold text-neutral-900 dark:text-white">Tayoca Control</span>
       </div>
 
       {/* Main Navigation */}
