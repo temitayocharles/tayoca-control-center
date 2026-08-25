@@ -1,0 +1,35 @@
+name: Refresh dependency lockfile
+on:
+  push:
+    branches: [feature/real-management-console]
+    paths: [.github/workflows/dependency-lockfile-refresh.yml]
+permissions:
+  contents: read
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Reclassify build tooling
+        run: node -e "const f=require('fs'),p=require('./package.json'),a=['@tailwindcss/vite','@vitejs/plugin-react','tailwindcss','typescript','vite'];for(const n of a){if(!p.dependencies[n])throw Error(n);p.devDependencies[n]=p.dependencies[n];delete p.dependencies[n]}f.writeFileSync('package.json',JSON.stringify(p,null,2)+'\\n')"
+      - run: npm install --package-lock-only --ignore-scripts
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=low --json > production-audit.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-lockfile-refresh
+          retention-days: 1
+          if-no-files-found: error
+          path: |
+            package.json
+            package-lock.json
+            production-audit.json
