@@ -99,7 +99,26 @@ export const ContentPage: React.FC = () => {
     if (!force && !confirmDiscard()) return;
     setBusy(true);
     try {
-      setFiles(await cmsApi.list());
+      const refreshedFiles = await cmsApi.list();
+      setFiles(refreshedFiles);
+
+      if (selected && !creating) {
+        const fresh = await cmsApi.get(selected.path);
+        setSelected(fresh);
+        setPath(fresh.path);
+        setOriginalPath(fresh.path);
+        setContent(fresh.content);
+        setOriginalContent(fresh.content);
+      } else if (creating) {
+        setSelected(null);
+        setPath('');
+        setOriginalPath('');
+        setContent('');
+        setOriginalContent('');
+        setCreating(false);
+        setMode('source');
+      }
+
       toast.success('Content refreshed');
     } catch (error) {
       toast.error('Failed to load site content', error instanceof Error ? error.message : 'Unknown error');
@@ -186,6 +205,17 @@ export const ContentPage: React.FC = () => {
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    const handleSaveShortcut = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') return;
+      event.preventDefault();
+      if (canSave) void save();
+    };
+
+    window.addEventListener('keydown', handleSaveShortcut);
+    return () => window.removeEventListener('keydown', handleSaveShortcut);
+  }, [canSave, busy, content, creating, path, selected]);
 
   const remove = async () => {
     if (!selected) return;
