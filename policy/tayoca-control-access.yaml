@@ -1,0 +1,64 @@
+apiVersion: tayoca.io/v1
+kind: ControlCenterAccessPolicy
+metadata:
+  name: tayoca-control-center
+  description: Desired authentication and trusted-device policy for the Tayoca Control Center.
+spec:
+  canonicalHost: control.tayoca.com
+
+  session:
+    duration: 720h
+    browserBindingCookie: true
+
+  identity:
+    ownerSelector:
+      source: runtime
+      valueFrom: OWNER_IDENTITY
+    providers:
+      preferred:
+        - name: GitHub via Cloudflare
+          type: cloudflare-account
+          restrictToAccountMembers: true
+      fallback:
+        - name: Email OTP
+          type: onetimepin
+
+  warp:
+    authenticateViaWarp: true
+    trustedPlatforms:
+      - macOS
+      - iOS
+    enrollment:
+      ownerScoped: true
+      serviceMode: warp
+      doNotRequireEnrollmentForFallback: true
+
+  accessPolicies:
+    - name: Trusted WARP device
+      precedence: 1
+      decision: allow
+      include:
+        - ownerIdentity: true
+      require:
+        - devicePosture: WARP
+
+    - name: Owner only
+      precedence: 2
+      decision: allow
+      include:
+        - ownerIdentity: true
+      require: []
+
+  originProtection:
+    denyRawVercelOrigin: true
+    api:
+      requireCanonicalHost: true
+      verifyCloudflareAccessJwt: true
+      failClosedWhenAccessConfigurationMissing: true
+
+  invariants:
+    - Never expose n8n or Forgejo credentials to the browser.
+    - Never remove the owner fallback until all trusted devices are enrolled and verified.
+    - WARP is the preferred low-friction authentication path on enrolled devices.
+    - GitHub via Cloudflare is the preferred interactive fallback.
+    - Email OTP remains emergency fallback only.
