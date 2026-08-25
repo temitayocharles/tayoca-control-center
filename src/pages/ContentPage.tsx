@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   Code2,
@@ -132,9 +132,9 @@ export const ContentPage: React.FC = () => {
     cmsApi
       .list()
       .then(setFiles)
-      .catch((error) => toast.error('Failed to load site content', error instanceof Error ? error.message : 'Unkown error'))
+      .catch((error) => toast.error('Failed to load site content', error instanceof Error ? error.message : 'Unknown error'))
       .finally(() => setBusy(false));
-  }, [toast]);
+  }, []);
 
   const open = async (entry: ContentEntry) => {
     if (selected?.path === entry.path && !creating) return;
@@ -174,7 +174,7 @@ export const ContentPage: React.FC = () => {
     setContent(originalContent);
   };
 
-  const save = useCallback(async () => {
+  const save = async () => {
     if (!canSave) return;
     setBusy(true);
     try {
@@ -204,7 +204,7 @@ export const ContentPage: React.FC = () => {
     } finally {
       setBusy(false);
     }
-  }, [canSave, content, creating, path, selected, toast]);
+  };
 
   useEffect(() => {
     const handleSaveShortcut = (event: KeyboardEvent) => {
@@ -215,7 +215,7 @@ export const ContentPage: React.FC = () => {
 
     window.addEventListener('keydown', handleSaveShortcut);
     return () => window.removeEventListener('keydown', handleSaveShortcut);
-  }, [canSave, save]);
+  }, [canSave, busy, content, creating, path, selected]);
 
   const remove = async () => {
     if (!selected) return;
@@ -246,31 +246,31 @@ export const ContentPage: React.FC = () => {
     }
 
     if (extension === '.html' || extension === '.htm') {
-    return (
-      <iframe
-        title={`Preview of ${path}`}
-        sandbox=""
-        referrerPolicy="no-referrer"
-        srcDoc={content}
-        className="w-full min-h-[64vh] bg-white rounded-md border dark:border-neutral-700"
-      />
-    );
-  }
-
-  if (extension === '.json') {
-    if (jsonError) {
       return (
-        <div className="p-4 rounded-md border border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
-          <div className="flex items-center gap-2 font-medium"><AlertTriangle size={16} /> Invalid JSON</div>
-          <pre className="mt-2 whitespace-pre-wrap text-xs">{jsonError}</pre>
-        </div>
+        <iframe
+          title={`Preview of ${path}`}
+          sandbox=""
+          referrerPolicy="no-referrer"
+          srcDoc={content}
+          className="w-full min-h-[64vh] bg-white rounded-md border dark:border-neutral-700"
+        />
       );
     }
-    const formatted = content.trim() ? JSON.stringify(JSON.parse(content), null, 2) : '';
-    return <pre className="min-h-[64vh] p-4 overflow-auto whitespace-pre-wrap text-xs font-mono border rounded-md dark:border-neutral-700">{formatted}</pre>;
-  }
 
-  return <pre className="min-h-[64vh] p-4 overflow-auto whitespace-pre-wrap text-sm border rounded-md dark:border-neutral-700">{content}</pre>;
+    if (extension === '.json') {
+      if (jsonError) {
+        return (
+          <div className="p-4 rounded-md border border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+            <div className="flex items-center gap-2 font-medium"><AlertTriangle size={16} /> Invalid JSON</div>
+            <pre className="mt-2 whitespace-pre-wrap text-xs">{jsonError}</pre>
+          </div>
+        );
+      }
+      const formatted = content.trim() ? JSON.stringify(JSON.parse(content), null, 2) : '';
+      return <pre className="min-h-[64vh] p-4 overflow-auto whitespace-pre-wrap text-xs font-mono border rounded-md dark:border-neutral-700">{formatted}</pre>;
+    }
+
+    return <pre className="min-h-[64vh] p-4 overflow-auto whitespace-pre-wrap text-sm border rounded-md dark:border-neutral-700">{content}</pre>;
   };
 
   return (
@@ -364,7 +364,7 @@ export const ContentPage: React.FC = () => {
                 <Code2 size={14} className="inline mr-1.5" />Source
               </button>
               <button
-                onClick={() => setMode('preview'%}
+                onClick={() => setMode('preview')}
                 className={`px-3 py-1.5 text-xs ${mode === 'preview' ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : ''}`}
               >
                 <Eye size={14} className="inline mr-1.5" />Preview

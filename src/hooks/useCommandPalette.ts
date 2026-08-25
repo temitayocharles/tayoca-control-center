@@ -110,11 +110,9 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
     [navigate, close]
   );
 
-  const { onRefresh } = options;
-
   const actionCommands: Command[] = useMemo(
     () => [
-      ...(onRefresh
+      ...(options.onRefresh
         ? [
             {
               id: 'action-refresh',
@@ -123,14 +121,14 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
               category: 'action' as const,
               keywords: ['reload', 'update', 'sync'],
               action: () => {
-                onRefresh();
+                options.onRefresh?.();
                 close();
               },
             },
           ]
         : []),
     ],
-    [onRefresh, close]
+    [options.onRefresh, close]
   );
 
   const workflowCommands: Command[] = useMemo(() => {
