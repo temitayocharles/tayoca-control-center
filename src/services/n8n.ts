@@ -1,261 +1,100 @@
 import type { Workflow, Execution, Credential, Variable } from '../types';
-import { getStoredSettings } from '../hooks/useSettings';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { controlRequest } from './control';
 
-const getBaseUrl = (): string => {
-  // Always use proxy path to avoid CORS issues
-  // In dev: Vite proxy forwards to VITE_N8N_URL
-  // In prod: Vercel serverless function handles it
-  return '/api/n8n';
+type Page<T> = { data: T[]; nextCursor?: string };
+type WorkflowDraft = Pick<Workflow, 'name' | 'nodes' | 'connections'> & {
+  settings?: Record<string, unknown>;
+  description?: string;
 };
 
-const getHeaders = async (): Promise<HeadersInit> => {
-  const settings = getStoredSettings();
+const workflowDraft = (workflow: Workflow): WorkflowDraft => ({
+  name: workflow.name,
+  nodes: workflow.nodes,
+  connections: workflow.connections,
+  settings: workflow.settings || {},
+  ...(workflow.description ? { description: workflow.description } : {}),
+});
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  // If Supabase is configured and user is authenticated, include the access token
-  // The serverless proxy will use this to look up the user's encrypted credentials
-  if (isSupabaseConfigured()) {
-    const { data } = await supabase.auth.getSession();
-    if (data.session?.access_token) {
-      headers['Authorization'] = `Bearer ${data.session.access_token}`;
-    }
+const canonicalize = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.keys(value as Record<string, unknown>).sort().map(key => [key, canonicalize((value as Record<string, unknown>)[key])]));
   }
-
-  // For development without Supabase, use local settings or env variable
-  if (!isSupabaseConfigured()) {
-    if (settings.apiKey) {
-      headers['X-N8N-API-KEY'] = settings.apiKey;
-    } else if (import.meta.env.DEV && import.meta.env.VITE_N8N_API_KEY) {
-      headers['X-N8N-API-KEY'] = import.meta.env.VITE_N8N_API_KEY;
-    }
-  }
-
-  return headers;
+  return value;
 };
+const stable = (value: unknown): string => JSON.stringify(canonicalize(value));
 
 export const n8nApi = {
-  async getWorkflows(params?: { limit?: number }): Promise<{ data: Workflow[] }> {
-    const searchParams = new URLSearchParams();
-    // Default to 250 to fetch more workflows, n8n's default is often 10-100
-    searchParams.set('limit', (params?.limit ?? 250).toString());
-
-    const res = await fetch(`${getBaseUrl()}/api/v1/workflows?${searchParams.toString()}`, {
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch workflows: ${res.statusText}`);
-    }
-
-    return res.json();
+  async getWorkflows(params?: { limit?: number }): Promise<Page<Workflow>> {
+    return controlRequest('list_workflows', { limit: params?.limit ?? 250 });
   },
 
-  // Fetch all workflows using cursor-based pagination
-  async getAllWorkflows(): Promise<{ data: Workflow[] }> {
-    const allWorkflows: Workflow[] = [];
+  async getAllWorkflows(): Promise<Page<Workflow>> {
+    const data: Workflow[] = [];
     let cursor: string | undefined;
-    const limit = 250;
-
     do {
-      const searchParams = new URLSearchParams();
-      searchParams.set('limit', limit.toString());
-      if (cursor) {
-        searchParams.set('cursor', cursor);
-      }
-
-      const res = await fetch(`${getBaseUrl()}/api/v1/workflows?${searchParams.toString()}`, {
-        headers: await getHeaders(),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch workflows: ${res.statusText}`);
-      }
-
-      const response = await res.json();
-      const workflows = response.data || [];
-      allWorkflows.push(...workflows);
-
-      // n8n returns nextCursor if there are more results
-      cursor = response.nextCursor;
+      const page = await controlRequest<Page<Workflow>>('list_workflows', { limit: 250, ...(cursor ? { cursor } : {}) });
+      data.push(...(page.data || []));
+      cursor = page.nextCursor;
     } while (cursor);
-
-    return { data: allWorkflows };
+    return { data };
   },
 
   async getWorkflow(id: string): Promise<Workflow> {
-    const res = await fetch(`${getBaseUrl()}/api/v1/workflows/${id}`, {
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch workflow: ${res.statusText}`);
-    }
-
-    return res.json();
+    return controlRequest('get_workflow', { id });
   },
 
-  async getExecutions(params?: {
-    limit?: number;
-    status?: string;
-    workflowId?: string;
-  }): Promise<{ data: Execution[] }> {
-    const searchParams = new URLSearchParams();
-    // Default to 250 if no limit specified
-    searchParams.set('limit', (params?.limit ?? 250).toString());
-    if (params?.status) searchParams.set('status', params.status);
-    if (params?.workflowId) searchParams.set('workflowId', params.workflowId);
-
-    const url = `${getBaseUrl()}/api/v1/executions?${searchParams.toString()}`;
-    const res = await fetch(url, {
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch executions: ${res.statusText}`);
-    }
-
-    return res.json();
+  async createWorkflow(definition: WorkflowDraft): Promise<Workflow> {
+    return controlRequest('create_workflow', { workflow: definition });
   },
 
-  // Fetch all executions using cursor-based pagination
-  async getAllExecutions(params?: {
-    status?: string;
-    workflowId?: string;
-  }): Promise<{ data: Execution[] }> {
-    const allExecutions: Execution[] = [];
+  async updateWorkflow(id: string, definition: WorkflowDraft): Promise<Workflow> {
+    await controlRequest<Workflow>('update_workflow', { id, workflow: definition });
+    const readBack = await this.getWorkflow(id);
+    const expected = workflowDraft({ ...readBack, ...definition } as Workflow);
+    const actual = workflowDraft(readBack);
+    if (stable(expected) !== stable(actual)) throw new Error('Save verification failed: n8n read-back differs from the submitted draft.');
+    return readBack;
+  },
+
+  async deleteWorkflow(id: string): Promise<Workflow> {
+    return controlRequest('delete_workflow', { id });
+  },
+
+  async publishWorkflow(id: string): Promise<Workflow> {
+    return controlRequest('publish_workflow', { id });
+  },
+
+  async unpublishWorkflow(id: string): Promise<Workflow> {
+    return controlRequest('unpublish_workflow', { id });
+  },
+
+  async activateWorkflow(id: string): Promise<Workflow> { return this.publishWorkflow(id); },
+  async deactivateWorkflow(id: string): Promise<Workflow> { return this.unpublishWorkflow(id); },
+
+  async triggerWorkflow(id: string): Promise<{ executionId?: string; id?: string }> {
+    return controlRequest('run_workflow', { id });
+  },
+
+  async getExecutions(params?: { limit?: number; status?: string; workflowId?: string }): Promise<Page<Execution>> {
+    return controlRequest('list_executions', { limit: params?.limit ?? 250, ...(params?.status ? { status: params.status } : {}), ...(params?.workflowId ? { workflowId: params.workflowId } : {}) });
+  },
+
+  async getAllExecutions(params?: { status?: string; workflowId?: string }): Promise<Page<Execution>> {
+    const data: Execution[] = [];
     let cursor: string | undefined;
-    const limit = 250;
-
     do {
-      const searchParams = new URLSearchParams();
-      searchParams.set('limit', limit.toString());
-      if (params?.status) searchParams.set('status', params.status);
-      if (params?.workflowId) searchParams.set('workflowId', params.workflowId);
-      if (cursor) {
-        searchParams.set('cursor', cursor);
-      }
-
-      const res = await fetch(`${getBaseUrl()}/api/v1/executions?${searchParams.toString()}`, {
-        headers: await getHeaders(),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch executions: ${res.statusText}`);
-      }
-
-      const response = await res.json();
-      const executions = response.data || [];
-      allExecutions.push(...executions);
-
-      // n8n returns nextCursor if there are more results
-      cursor = response.nextCursor;
+      const page = await controlRequest<Page<Execution>>('list_executions', { limit: 250, ...(params || {}), ...(cursor ? { cursor } : {}) });
+      data.push(...(page.data || []));
+      cursor = page.nextCursor;
     } while (cursor);
-
-    return { data: allExecutions };
+    return { data };
   },
 
-  async getExecution(id: string): Promise<Execution> {
-    const res = await fetch(`${getBaseUrl()}/api/v1/executions/${id}`, {
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch execution: ${res.statusText}`);
-    }
-
-    return res.json();
-  },
-
-  async activateWorkflow(id: string): Promise<Workflow> {
-    const res = await fetch(`${getBaseUrl()}/api/v1/workflows/${id}/activate`, {
-      method: 'POST',
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to activate workflow: ${res.statusText}`);
-    }
-
-    return res.json();
-  },
-
-  async deactivateWorkflow(id: string): Promise<Workflow> {
-    const res = await fetch(`${getBaseUrl()}/api/v1/workflows/${id}/deactivate`, {
-      method: 'POST',
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to deactivate workflow: ${res.statusText}`);
-    }
-
-    return res.json();
-  },
-
-  async triggerWorkflow(id: string): Promise<{ executionId: string }> {
-    const res = await fetch(`${getBaseUrl()}/api/v1/workflows/${id}/run`, {
-      method: 'POST',
-      headers: await getHeaders(),
-      body: JSON.stringify({}),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to trigger workflow: ${res.statusText}`);
-    }
-
-    return res.json();
-  },
-
+  async getExecution(id: string): Promise<Execution> { return controlRequest('get_execution', { id }); },
+  async getCredentials(): Promise<Page<Credential>> { return controlRequest('list_credentials', { limit: 250 }); },
+  async getVariables(): Promise<Page<Variable>> { return controlRequest('list_variables', { limit: 250 }); },
   async testConnection(): Promise<boolean> {
-    try {
-      const res = await fetch(`${getBaseUrl()}/api/v1/workflows?limit=1`, {
-        headers: await getHeaders(),
-      });
-      return res.ok;
-    } catch {
-      return false;
-    }
-  },
-
-  // Credentials (note: n8n API only returns metadata, not actual secrets)
-  async getCredentials(): Promise<{ data: Credential[] }> {
-    const searchParams = new URLSearchParams();
-    searchParams.set('limit', '250');
-
-    const res = await fetch(`${getBaseUrl()}/api/v1/credentials?${searchParams.toString()}`, {
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch credentials: ${res.statusText}`);
-    }
-
-    const response = await res.json();
-    // Handle both array response and { data: [...] } response formats
-    const data = Array.isArray(response) ? response : (response.data || []);
-    return { data };
-  },
-
-  // Variables (requires n8n 1.x+)
-  async getVariables(): Promise<{ data: Variable[] }> {
-    const searchParams = new URLSearchParams();
-    searchParams.set('limit', '250');
-
-    const res = await fetch(`${getBaseUrl()}/api/v1/variables?${searchParams.toString()}`, {
-      headers: await getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch variables: ${res.statusText}`);
-    }
-
-    const response = await res.json();
-    // Handle both array response and { data: [...] } response formats
-    const data = Array.isArray(response) ? response : (response.data || []);
-    return { data };
+    try { await controlRequest('list_workflows', { limit: 1 }); return true; } catch { return false; }
   },
 };

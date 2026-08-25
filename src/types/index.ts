@@ -6,6 +6,10 @@ export interface Workflow {
   updatedAt: string;
   nodes: WorkflowNode[];
   connections: Record<string, unknown>;
+  settings?: Record<string, unknown>;
+  description?: string;
+  versionId?: string;
+  isArchived?: boolean;
   tags?: Tag[];
 }
 

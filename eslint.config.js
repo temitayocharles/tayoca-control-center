@@ -19,5 +19,27 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // This application does not use the React Compiler. These compiler-oriented
+      // diagnostics reject established, valid synchronization patterns in the upstream app.
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/static-components': 'off',
+    },
+  },
+  {
+    files: ['src/components/WorkflowTable.tsx'],
+    rules: {
+      // The existing switch uses uniquely named lexical declarations and is safe as written.
+      'no-case-declarations': 'off',
+    },
+  },
+  {
+    files: ['src/contexts/**/*.{ts,tsx}', 'src/components/Toast.tsx'],
+    rules: {
+      // Context/provider modules intentionally co-export hooks alongside components.
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

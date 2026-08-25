@@ -1,0 +1,30 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { FilePlus2, Play, RefreshCw, Save, Send, Trash2 } from 'lucide-react';
+import { PageHeader } from '../components/layout';
+import { n8nApi } from '../services/n8n';
+import type { Workflow } from '../types';
+import { useToast } from '../components/Toast';
+
+const draftOf = (w: Workflow) => ({ name: w.name, nodes: w.nodes || [], connections: w.connections || {}, settings: w.settings || {}, ...(w.description ? { description: w.description } : {}) });
+const blank = { name: 'New workflow', nodes: [], connections: {}, settings: {} };
+
+export const WorkflowStudioPage: React.FC = () => {
+  const toast = useToast();
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [selected, setSelected] = useState<Workflow | null>(null);
+  const [editor, setEditor] = useState(JSON.stringify(blank, null, 2));
+  const [search, setSearch] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const filtered = useMemo(()=>workflows.filter(w=>w.name.toLowerCase().includes(search.toLowerCase())),[workflows,search]);
+  const reload = async () => { const r=await n8nApi.getAllWorkflows(); setWorkflows(r.data || []); };
+  useEffect(()=>{ reload().catch(e=>toast.error('Failed to load workflows',e.message)); },[]);
+  const select = async (w: Workflow) => { setBusy(true); try { const full=await n8nApi.getWorkflow(w.id); setSelected(full); setEditor(JSON.stringify(draftOf(full),null,2)); setCreating(false); } finally { setBusy(false); } };
+  const createNew=()=>{setSelected(null);setCreating(true);setEditor(JSON.stringify(blank,null,2));};
+  const parse=()=>{ const d=JSON.parse(editor); if(!d.name||!Array.isArray(d.nodes)||!d.connections) throw new Error('Workflow must contain name, nodes[], and connections.'); return d; };
+  const save=async()=>{setBusy(true);try{const d=parse();const saved=creating?await n8nApi.createWorkflow(d):await n8nApi.updateWorkflow(selected!.id,d);toast.success(creating?'Workflow created':'Draft saved and verified',saved.name);await reload();await select(saved);}catch(e){toast.error('Save failed',e instanceof Error?e.message:'Unknown error');}finally{setBusy(false);}};
+  const publish=async()=>{if(!selected)return;setBusy(true);try{const w=selected.active?await n8nApi.unpublishWorkflow(selected.id):await n8nApi.publishWorkflow(selected.id);toast.success(w.active?'Workflow published':'Workflow unpublished',w.name);await reload();await select(w);}catch(e){toast.error('Publish action failed',e instanceof Error?e.message:'Unknown error');}finally{setBusy(false);}};
+  const run=async()=>{if(!selected)return;try{await n8nApi.triggerWorkflow(selected.id);toast.success('Workflow run requested',selected.name);}catch(e){toast.error('Run failed',e instanceof Error?e.message:'This workflow may require its production trigger instead.');}};
+  const remove=async()=>{if(!selected||!window.confirm(`Permanently delete ${selected.name}?`))return;setBusy(true);try{await n8nApi.deleteWorkflow(selected.id);toast.success('Workflow deleted',selected.name);setSelected(null);await reload();}catch(e){toast.error('Delete failed',e instanceof Error?e.message:'Unknown error');}finally{setBusy(false);}};
+  return <><PageHeader title="Workflow Studio" description="Create, edit, verify, publish and operate n8n workflows without exposing an n8n API key" actions={<div className="flex gap-2"><button onClick={createNew} className="px-3 py-1.5 text-sm rounded-lg border"><FilePlus2 size={15} className="inline mr-2"/>New</button><button onClick={()=>reload()} className="px-3 py-1.5 text-sm rounded-lg border"><RefreshCw size={15} className="inline mr-2"/>Refresh</button></div>}/><div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4"><div className="border rounded-lg bg-white dark:bg-neutral-900 dark:border-neutral-800 overflow-hidden"><div className="p-3 border-b dark:border-neutral-800"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search workflows..." className="w-full px-3 py-2 text-sm border rounded-md bg-transparent dark:border-neutral-700"/></div><div className="max-h-[70vh] overflow-auto">{filtered.map(w=><button key={w.id} onClick={()=>select(w)} className={`block w-full text-left px-3 py-2 border-b dark:border-neutral-800 ${selected?.id===w.id?'bg-neutral-100 dark:bg-neutral-800':''}`}><div className="flex items-center justify-between gap-2"><span className="text-sm font-medium truncate">{w.name}</span><span className={`text-[10px] px-1.5 py-0.5 rounded ${w.active?'bg-emerald-100 text-emerald-700':'bg-neutral-100 text-neutral-500'}`}>{w.active?'LIVE':'DRAFT'}</span></div><div className="text-xs text-neutral-500 truncate">{w.id}</div></button>)}</div></div><div className="border rounded-lg bg-white dark:bg-neutral-900 dark:border-neutral-800 p-4 space-y-3"><div className="flex flex-wrap gap-2"><button disabled={busy||(!creating&&!selected)} onClick={save} className="px-3 py-2 text-sm rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 disabled:opacity-50"><Save size={15} className="inline mr-2"/>Save Draft</button>{selected&&<><button disabled={busy} onClick={publish} className="px-3 py-2 text-sm rounded-md border"><Send size={15} className="inline mr-2"/>{selected.active?'Unpublish':'Publish'}</button><button disabled={busy} onClick={run} className="px-3 py-2 text-sm rounded-md border"><Play size={15} className="inline mr-2"/>Run</button><button disabled={busy} onClick={remove} className="px-3 py-2 text-sm rounded-md border text-red-600"><Trash2 size={15} className="inline mr-2"/>Delete</button></>}</div><div className="text-xs text-neutral-500">Save is fail-closed: the control center reads the workflow back from n8n and verifies the persisted definition before reporting success. Publishing is always a separate action.</div><textarea value={editor} onChange={e=>setEditor(e.target.value)} disabled={busy} spellCheck={false} className="w-full min-h-[62vh] p-4 text-xs leading-5 font-mono border rounded-md bg-neutral-950 text-neutral-100 dark:border-neutral-700"/></div></div></>;
+};

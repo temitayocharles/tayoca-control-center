@@ -16,6 +16,8 @@ import { isSupabaseConfigured } from './lib/supabase';
 // Lazy load pages for code splitting
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const WorkflowsPage = lazy(() => import('./pages/WorkflowsPage').then(m => ({ default: m.WorkflowsPage })));
+const WorkflowStudioPage = lazy(() => import('./pages/WorkflowStudioPage').then(m => ({ default: m.WorkflowStudioPage })));
+const ContentPage = lazy(() => import('./pages/ContentPage').then(m => ({ default: m.ContentPage })));
 const ExecutionsPage = lazy(() => import('./pages/ExecutionsPage').then(m => ({ default: m.ExecutionsPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 
@@ -96,6 +98,8 @@ const AppContent: React.FC = () => {
             {/* Main */}
             <Route path="/" element={<DashboardPage onShowSettings={() => setShowSettings(true)} />} />
             <Route path="/workflows" element={<WorkflowsPage />} />
+            <Route path="/workflow-studio" element={<WorkflowStudioPage />} />
+            <Route path="/content" element={<ContentPage />} />
             <Route path="/executions" element={<ExecutionsPage />} />
 
             {/* Monitoring */}
