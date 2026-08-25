@@ -89,7 +89,11 @@ async function runWebhookWorkflow(
 
   const text = await response.text();
   let result: unknown = text;
-  try { result = text ? JSON.parse(text) : {}; } catch {}
+  try {
+    result = text ? JSON.parse(text) : {};
+  } catch {
+    result = text;
+  }
 
   if (!response.ok) {
     return {

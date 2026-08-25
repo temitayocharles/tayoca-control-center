@@ -2,7 +2,8 @@
  * Public n8n console URL used only for operator links and webhook display.
  * Authentication and API credentials never come from browser settings.
  */
-export const getN8nUrl = (_settings?: unknown): string => {
+export const getN8nUrl = (settings?: unknown): string => {
+  void settings;
   const value = String(import.meta.env.VITE_N8N_CONSOLE_URL || '');
   return value.replace(/\/+$/, '');
 };
