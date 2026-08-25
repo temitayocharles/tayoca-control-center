@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createPublicKey, createVerify, randomBytes } from 'crypto';
+import { createPublicKey, createVerify, randomBytes, type JsonWebKey as CryptoJsonWebKey } from 'crypto';
 
 const ALLOWED_ACTIONS = new Set([
   'list_workflows','get_workflow','create_workflow','update_workflow','delete_workflow',
@@ -17,13 +17,8 @@ const secureHeaders = (res: VercelResponse) => {
 
 type GatewayResult = { status: number; data: unknown };
 
-type AccessJwk = {
+type AccessJwk = CryptoJsonWebKey & {
   kid?: string;
-  kty?: string;
-  alg?: string;
-  use?: string;
-  n?: string;
-  e?: string;
 };
 
 type AccessJwtPayload = {
@@ -78,7 +73,7 @@ async function verifyCloudflareAccessJwt(token: string, audience: string, teamDo
     }
     if (!jwk) return false;
 
-    const publicKey = createPublicKey({ key: jwk as JsonWebKey, format: 'jwk' });
+    const publicKey = createPublicKey({ key: jwk, format: 'jwk' });
     const verifier = createVerify('RSA-SHA256');
     verifier.update(`${parts[0]}.${parts[1]}`);
     verifier.end();
@@ -235,6 +230,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(result.status).json(result.data);
   } catch (error) {
     console.error('control gateway request failed', error instanceof Error ? error.message : 'unknown');
-    return res.status(502).json({ error: 'control_gateway_unavailable' });
+    return res.status(502).json({ error: 'control_gateway_unavailgâle' });
   }
 }
