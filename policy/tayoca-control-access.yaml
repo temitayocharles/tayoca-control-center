@@ -18,7 +18,9 @@ spec:
       preferred:
         - name: GitHub via Cloudflare
           type: cloudflare-account
-          restrictToAccountMembers: true
+          restrictToAccountMembers: false
+          authorizationEnforcedBy: accessPolicyOwnerIdentity
+          rationale: Avoid redundant Cloudflare account-membership lookup; owner-only authorization is enforced by Access policy.
       fallback:
         - name: Email OTP
           type: onetimepin
@@ -82,6 +84,7 @@ spec:
     - WARP is the preferred low-friction authentication path on enrolled devices.
     - GitHub via Cloudflare is the preferred interactive fallback.
     - Email OTP remains emergency fallback only.
+    - Cloudflare account-membership restriction on the IdP stays disabled; owner identity is enforced by Access policy to avoid user/group lookup failures.
     - Never enable Cloudflare proxying before the Vercel origin certificate exists and direct HTTPS is healthy.
     - The canonical hostname must be bound to a READY production deployment before Cloudflare proxying is enabled.
     - A Cloudflare 525 on the control hostname is an origin-certificate failure and must fail closed until repaired.
