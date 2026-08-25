@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Production dependency audit report
+        run: npm audit --omit=dev --audit-level=low || true
+
       - name: Lint
         run: npm run lint
 
