@@ -2,7 +2,7 @@ apiVersion: tayoca.io/v1
 kind: ControlCenterAccessPolicy
 metadata:
   name: tayoca-control-center
-  description: Desired authentication and trusted-device policy for the Tayoca Control Center.
+  description: Desired authentication, trusted-device, origin TLS, and access policy for the Tayoca Control Center.
 spec:
   canonicalHost: control.tayoca.com
 
@@ -56,9 +56,32 @@ spec:
       verifyCloudflareAccessJwt: true
       failClosedWhenAccessConfigurationMissing: true
 
+    tlsLifecycle:
+      provider: vercel
+      certificate:
+        required: true
+        autoRenew: true
+        validationMethod: http-01
+      bootstrapOrder:
+        - cloudflareDnsMode: dns-only
+        - requireVercelDomainConfigured: true
+        - requireVercelCertificateIssued: true
+        - requireHostnameBoundToReadyProductionDeployment: true
+        - requireDirectHttpsHealthy: true
+        - cloudflareDnsMode: proxied
+        - requireCloudflareAccessLoginHealthy: true
+      failurePolicy:
+        onMissingCertificate: keep-dns-only
+        onDirectTlsFailure: keep-dns-only
+        onCloudflare525: disable-proxy-and-reconcile-origin-cert
+        neverDowngradeTlsToFlexible: true
+
   invariants:
     - Never expose n8n or Forgejo credentials to the browser.
     - Never remove the owner fallback until all trusted devices are enrolled and verified.
     - WARP is the preferred low-friction authentication path on enrolled devices.
     - GitHub via Cloudflare is the preferred interactive fallback.
     - Email OTP remains emergency fallback only.
+    - Never enable Cloudflare proxying before the Vercel origin certificate exists and direct HTTPS is healthy.
+    - The canonical hostname must be bound to a READY production deployment before Cloudflare proxying is enabled.
+    - A Cloudflare 525 on the control hostname is an origin-certificate failure and must fail closed until repaired.
