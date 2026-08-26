@@ -88,6 +88,19 @@ jobs:
           grep -q 'Dashboard' /tmp/tayoca-rendered-dom.html
           grep -q 'Workflow Studio' /tmp/tayoca-rendered-dom.html
 
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            http://127.0.0.1:4173/content > /tmp/tayoca-cms-rendered-dom.html
+
+          grep -q 'Website CMS' /tmp/tayoca-cms-rendered-dom.html
+          grep -q 'All content' /tmp/tayoca-cms-rendered-dom.html
+          grep -q 'New content' /tmp/tayoca-cms-rendered-dom.html
+
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
             exit 1

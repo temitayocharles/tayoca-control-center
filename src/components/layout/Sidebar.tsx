@@ -48,7 +48,7 @@ const navSections: NavSection[] = [
   {
     title: 'Manage',
     items: [
-      { icon: FilePenLine, label: 'Site Content', path: '/content' },
+      { icon: FilePenLine, label: 'Website CMS', path: '/content' },
       { icon: Braces, label: 'Workflow Studio', path: '/workflow-studio' },
     ],
   },
