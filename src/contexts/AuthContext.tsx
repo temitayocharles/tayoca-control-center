@@ -15,6 +15,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const notConfiguredError = () => new Error('Supabase authentication is not configured for this managed control center.');
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -23,22 +24,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isConfigured = isSupabaseConfigured();
 
   useEffect(() => {
-    if (!isConfigured) {
+    if (!isConfigured || !supabase) {
       setLoading(false);
       return;
     }
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const client = supabase;
+
+    client.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = client.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
     });
@@ -48,30 +49,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = useCallback(
     async (email: string, password: string): Promise<{ error: Error | null }> => {
+      if (!supabase) return { error: notConfiguredError() };
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       return { error: error ? new Error(error.message) : null };
     },
-    []
+    [],
   );
 
   const signUp = useCallback(
     async (email: string, password: string): Promise<{ error: Error | null }> => {
+      if (!supabase) return { error: notConfiguredError() };
       const { error } = await supabase.auth.signUp({ email, password });
       return { error: error ? new Error(error.message) : null };
     },
-    []
+    [],
   );
 
   const signOut = useCallback(async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
   }, []);
 
   const resetPassword = useCallback(
     async (email: string): Promise<{ error: Error | null }> => {
+      if (!supabase) return { error: notConfiguredError() };
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       return { error: error ? new Error(error.message) : null };
     },
-    []
+    [],
   );
 
   const value: AuthContextType = {
