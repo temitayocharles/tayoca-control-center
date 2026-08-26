@@ -35,7 +35,6 @@ const parse = (html: string): Document | null => {
 };
 
 const cleanText = (node: Element | null): string => node?.textContent?.replace(/\s+/g, ' ').trim() || '';
-const escapeHtml = (value: string): string => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const safeHref = (value: string): string => { const v = value.trim(); return /^(?:https:\/\/|mailto:|#|\/(?!\/))/i.test(v) ? v : '#'; };
 
 const mainRange = (source: string): MainRange | null => {
