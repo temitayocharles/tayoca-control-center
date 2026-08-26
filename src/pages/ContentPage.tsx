@@ -8,6 +8,7 @@ import {
   FileText,
   Globe2,
   LayoutGrid,
+  Images,
   Plus,
   RefreshCw,
   RotateCcw,
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '../components/layout';
 import { RichTextEditor } from '../components/cms/RichTextEditor';
+import { MediaLibrary, MediaSelect } from '../components/cms/MediaLibrary';
 import { cmsApi, type ContentDocument, type ContentEntry } from '../services/cms';
 import { useToast } from '../components/Toast';
 import {
@@ -31,7 +33,7 @@ import {
   type CmsEditableFields,
 } from '../lib/cmsDocument';
 
-type CmsCategory = 'all' | 'page' | 'blog' | 'product' | 'data';
+type CmsCategory = 'all' | 'page' | 'blog' | 'product' | 'media' | 'data';
 type EditorTab = 'content' | 'seo' | 'preview' | 'advanced';
 
 const categoryConfig: Array<{ id: CmsCategory; label: string; description: string; icon: React.ElementType }> = [
@@ -39,6 +41,7 @@ const categoryConfig: Array<{ id: CmsCategory; label: string; description: strin
   { id: 'page', label: 'Pages', description: 'Main website pages', icon: FileText },
   { id: 'blog', label: 'Blog', description: 'Insights and articles', icon: BookOpen },
   { id: 'product', label: 'Products', description: 'Product landing pages', icon: Boxes },
+  { id: 'media', label: 'Media', description: 'Images and visual assets', icon: Images },
   { id: 'data', label: 'Site data', description: 'Structured site content', icon: Database },
 ];
 
@@ -88,6 +91,7 @@ export const ContentPage: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [creationKind, setCreationKind] = useState<CmsContentKind>('page');
   const [autoSlug, setAutoSlug] = useState(true);
+  const [mediaCount, setMediaCount] = useState<number | null>(null);
 
   const currentKind = creating ? creationKind : classifyContent(path || selected?.path || '');
   const isManagedHtml = ['page', 'blog', 'product'].includes(currentKind);
@@ -110,8 +114,9 @@ export const ContentPage: React.FC = () => {
     page: entries.filter((item) => item.kind === 'page').length,
     blog: entries.filter((item) => item.kind === 'blog').length,
     product: entries.filter((item) => item.kind === 'product').length,
+    media: mediaCount,
     data: entries.filter((item) => item.kind === 'data').length,
-  }), [entries]);
+  }), [entries, mediaCount]);
 
   const visibleEntries = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -369,7 +374,7 @@ export const ContentPage: React.FC = () => {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               {field('price', 'Price', '29')}
-              {field('coverImage', 'Cover image', '/assets/og-image.png')}
+              <MediaSelect label="Cover image" value={fields.coverImage} onChange={(value) => updateField('coverImage', value)} disabled={busy} />
               <div className="md:col-span-2">{field('purchaseUrl', 'Checkout link', 'https://tayoca.gumroad.com/...')}</div>
               <div className="md:col-span-2">{field('purchaseLabel', 'Buy button text', 'Buy securely on Gumroad')}</div>
             </div>
@@ -389,20 +394,20 @@ export const ContentPage: React.FC = () => {
             <button onClick={() => void loadFiles()} disabled={busy} className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
               <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> Refresh
             </button>
-            <button onClick={beginCreate} disabled={busy} className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900">
+            {category !== 'media' && <button onClick={beginCreate} disabled={busy} className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900">
               <Plus size={15} /> New content
-            </button>
+            </button>}
           </div>
         )}
       />
 
       <div className="space-y-5">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
           {categoryConfig.map(({ id, label, description, icon: Icon }) => (
             <button key={id} onClick={() => setCategory(id)} className={`rounded-xl border p-4 text-left transition ${category === id ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900' : 'border-neutral-200 bg-white hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'}`}>
               <div className="flex items-center justify-between">
                 <Icon size={18} />
-                <span className="text-xl font-semibold">{counts[id]}</span>
+                <span className="text-xl font-semibold">{counts[id] ?? '—'}</span>
               </div>
               <div className="mt-4 text-sm font-semibold">{label}</div>
               <div className={`mt-1 text-xs ${category === id ? 'opacity-70' : 'text-neutral-500'}`}>{description}</div>
@@ -410,6 +415,9 @@ export const ContentPage: React.FC = () => {
           ))}
         </div>
 
+        {category === 'media' ? (
+          <MediaLibrary onCount={setMediaCount} />
+        ) : (
         <div className="grid min-h-[680px] grid-cols-1 gap-4 xl:grid-cols-[340px_1fr]">
           <aside className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
             <div className="border-b border-neutral-200 p-3 dark:border-neutral-800">
@@ -532,6 +540,7 @@ export const ContentPage: React.FC = () => {
             )}
           </main>
         </div>
+        )}
       </div>
     </>
   );
