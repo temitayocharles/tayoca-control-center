@@ -121,11 +121,13 @@ export const ContentPage: React.FC = () => {
   const dirty = creating ? Boolean(renderedContent.trim()) : Boolean(selected && (source !== originalContent || structuredDirty));
   const liveUrl = liveUrlForPath(path);
 
-  const entries = useMemo(() => files.map((file) => ({
-    ...file,
-    kind: classifyContent(file.path),
-    name: friendlyContentName(file.path),
-  })), [files]);
+  const entries = useMemo(() => files
+    .filter((file) => file.path !== 'public/data/site-settings.json')
+    .map((file) => ({
+      ...file,
+      kind: classifyContent(file.path),
+      name: friendlyContentName(file.path),
+    })), [files]);
 
   const counts = useMemo(() => ({
     all: entries.length,
