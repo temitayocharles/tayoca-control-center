@@ -20,6 +20,7 @@ import {
 import { PageHeader } from '../components/layout';
 import { RichTextEditor } from '../components/cms/RichTextEditor';
 import { MediaLibrary, MediaSelect } from '../components/cms/MediaLibrary';
+import { PageSectionsEditor } from '../components/cms/PageSectionsEditor';
 import { cmsApi, type ContentDocument, type ContentEntry } from '../services/cms';
 import { useToast } from '../components/Toast';
 import {
@@ -32,9 +33,15 @@ import {
   type CmsContentKind,
   type CmsEditableFields,
 } from '../lib/cmsDocument';
+import {
+  applyPageSections,
+  extractPageSections,
+  pageSectionsFingerprint,
+  type CmsPageSection,
+} from '../lib/cmsSections';
 
 type CmsCategory = 'all' | 'page' | 'blog' | 'product' | 'media' | 'data';
-type EditorTab = 'content' | 'seo' | 'preview' | 'advanced';
+type EditorTab = 'content' | 'sections' | 'seo' | 'preview' | 'advanced';
 
 const categoryConfig: Array<{ id: CmsCategory; label: string; description: string; icon: React.ElementType }> = [
   { id: 'all', label: 'All content', description: 'Everything published on Tayoca', icon: LayoutGrid },
@@ -92,14 +99,18 @@ export const ContentPage: React.FC = () => {
   const [creationKind, setCreationKind] = useState<CmsContentKind>('page');
   const [autoSlug, setAutoSlug] = useState(true);
   const [mediaCount, setMediaCount] = useState<number | null>(null);
+  const [sections, setSections] = useState<CmsPageSection[]>([]);
+  const [originalSections, setOriginalSections] = useState<CmsPageSection[]>([]);
 
   const currentKind = creating ? creationKind : classifyContent(path || selected?.path || '');
   const isManagedHtml = ['page', 'blog', 'product'].includes(currentKind);
-  const renderedContent = useMemo(
-    () => isManagedHtml ? applyCmsFields(source, path, fields) : source,
-    [fields, isManagedHtml, path, source],
-  );
-  const structuredDirty = JSON.stringify(fields) !== JSON.stringify(originalFields);
+  const renderedContent = useMemo(() => {
+    if (!isManagedHtml) return source;
+    const withFields = applyCmsFields(source, path, fields);
+    return currentKind === 'page' ? applyPageSections(withFields, sections) : withFields;
+  }, [currentKind, fields, isManagedHtml, path, sections, source]);
+  const sectionsDirty = currentKind === 'page' && pageSectionsFingerprint(sections) !== pageSectionsFingerprint(originalSections);
+  const structuredDirty = JSON.stringify(fields) !== JSON.stringify(originalFields) || sectionsDirty;
   const dirty = creating ? Boolean(renderedContent.trim()) : Boolean(selected && (source !== originalContent || structuredDirty));
   const liveUrl = liveUrlForPath(path);
 
@@ -164,8 +175,11 @@ export const ContentPage: React.FC = () => {
       setSource(document.content);
       setOriginalContent(document.content);
       const nextFields = extractCmsFields(document.content, document.path);
+      const nextSections = classifyContent(document.path) === 'page' ? extractPageSections(document.content) : [];
       setFields(nextFields);
       setOriginalFields(nextFields);
+      setSections(nextSections);
+      setOriginalSections(nextSections);
       setCreating(false);
       setTab('content');
       setAutoSlug(false);
@@ -189,8 +203,11 @@ export const ContentPage: React.FC = () => {
     setSource(starter);
     setOriginalContent('');
     const nextFields = extractCmsFields(starter, nextPath);
+    const nextSections = kind === 'page' ? extractPageSections(starter) : [];
     setFields(nextFields);
     setOriginalFields(emptyFields);
+    setSections(nextSections);
+    setOriginalSections([]);
     setTab('content');
     setAutoSlug(true);
   };
@@ -207,6 +224,9 @@ export const ContentPage: React.FC = () => {
     setSource(starter);
     setFields(extractCmsFields(starter, nextPath));
     setOriginalFields(emptyFields);
+    setSections(kind === 'page' ? extractPageSections(starter) : []);
+    setOriginalSections([]);
+    setTab('content');
   };
 
   const updateField = <K extends keyof CmsEditableFields>(key: K, value: CmsEditableFields[K]) => {
@@ -221,6 +241,7 @@ export const ContentPage: React.FC = () => {
   const handleAdvancedSource = (value: string) => {
     setSource(value);
     if (isManagedHtml) setFields(extractCmsFields(value, path));
+    setSections(classifyContent(path) === 'page' ? extractPageSections(value) : []);
   };
 
   const save = async () => {
@@ -245,8 +266,11 @@ export const ContentPage: React.FC = () => {
       setSource(document.content);
       setOriginalContent(document.content);
       const nextFields = extractCmsFields(document.content, document.path);
+      const nextSections = classifyContent(document.path) === 'page' ? extractPageSections(document.content) : [];
       setFields(nextFields);
       setOriginalFields(nextFields);
+      setSections(nextSections);
+      setOriginalSections(nextSections);
       setCreating(false);
       setAutoSlug(false);
       setFiles(await cmsApi.list());
@@ -267,10 +291,13 @@ export const ContentPage: React.FC = () => {
       setPath('');
       setFields(emptyFields);
       setOriginalFields(emptyFields);
+      setSections([]);
+      setOriginalSections([]);
       return;
     }
     setSource(originalContent);
     setFields(originalFields);
+    setSections(originalSections);
   };
 
   const remove = async () => {
@@ -286,6 +313,8 @@ export const ContentPage: React.FC = () => {
       setPath('');
       setFields(emptyFields);
       setOriginalFields(emptyFields);
+      setSections([]);
+      setOriginalSections([]);
       setFiles(await cmsApi.list());
     } catch (error) {
       toast.error('Delete failed', error instanceof Error ? error.message : 'Unknown error');
@@ -388,7 +417,7 @@ export const ContentPage: React.FC = () => {
     <>
       <PageHeader
         title="Website CMS"
-        description="Manage Tayoca pages, articles and products without editing code"
+        description="Manage Tayoca pages, sections, articles, products and media without editing code"
         actions={(
           <div className="flex gap-2">
             <button onClick={() => void loadFiles()} disabled={busy} className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
@@ -453,7 +482,7 @@ export const ContentPage: React.FC = () => {
                 <div className="max-w-lg text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"><Globe2 size={24} /></div>
                   <h2 className="mt-5 text-xl font-semibold text-neutral-900 dark:text-white">Choose something to manage</h2>
-                  <p className="mt-2 text-sm leading-6 text-neutral-500">Select a page, article or product from the left. Normal edits happen in simple fields; technical source details stay out of the way.</p>
+                  <p className="mt-2 text-sm leading-6 text-neutral-500">Select a page, article or product from the left. Edit hero content, reusable page sections, SEO and media in simple controls; technical source details stay out of the way.</p>
                   <button onClick={beginCreate} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"><Plus size={16} /> Create new content</button>
                 </div>
               </div>
@@ -479,15 +508,20 @@ export const ContentPage: React.FC = () => {
                 </div>
 
                 <div className="flex overflow-x-auto border-b border-neutral-200 px-5 dark:border-neutral-800">
-                  {([
-                    ['content', 'Content'], ['seo', 'SEO & social'], ['preview', 'Preview'], ['advanced', 'Advanced'],
-                  ] as Array<[EditorTab, string]>).map(([id, label]) => (
+                  {((currentKind === 'page'
+                    ? [['content', 'Content'], ['sections', 'Sections'], ['seo', 'SEO & social'], ['preview', 'Preview'], ['advanced', 'Advanced']]
+                    : [['content', 'Content'], ['seo', 'SEO & social'], ['preview', 'Preview'], ['advanced', 'Advanced']]
+                  ) as Array<[EditorTab, string]>).map(([id, label]) => (
                     <button key={id} onClick={() => setTab(id)} className={`border-b-2 px-4 py-3 text-sm font-medium ${tab === id ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>{label}</button>
                   ))}
                 </div>
 
                 <div className="p-5 lg:p-7">
                   {tab === 'content' && renderContentEditor()}
+
+                  {tab === 'sections' && currentKind === 'page' && (
+                    <PageSectionsEditor sections={sections} onChange={setSections} disabled={busy} />
+                  )}
 
                   {tab === 'seo' && isManagedHtml && (
                     <div className="max-w-3xl space-y-7">

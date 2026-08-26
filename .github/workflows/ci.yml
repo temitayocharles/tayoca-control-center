@@ -101,6 +101,7 @@ jobs:
           grep -q 'All content' /tmp/tayoca-cms-rendered-dom.html
           grep -q 'New content' /tmp/tayoca-cms-rendered-dom.html
           grep -q 'Images and visual assets' /tmp/tayoca-cms-rendered-dom.html
+          grep -q 'pages, sections, articles, products and media' /tmp/tayoca-cms-rendered-dom.html
 
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
