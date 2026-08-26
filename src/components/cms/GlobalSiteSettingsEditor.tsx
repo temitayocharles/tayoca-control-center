@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, Plus, RefreshCw, RotateCcw, Save, Settings2, Trash2 } from 'lucide-react';
-import { cmsApi, type ContentDocument } from '../../services/cms';
+import { ArrowDown, ArrowUp, History, Plus, RefreshCw, RotateCcw, Save, Settings2, Trash2 } from 'lucide-react';
+import { cmsApi, type ContentDocument, type ContentRevision } from '../../services/cms';
 import { useToast } from '../Toast';
 
 type SiteLink = { label: string; href: string; visible?: boolean };
@@ -71,6 +71,8 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [original, setOriginal] = useState('');
   const [busy, setBusy] = useState(false);
+  const [historyBusy, setHistoryBusy] = useState(false);
+  const [revisions, setRevisions] = useState<ContentRevision[]>([]);
 
   const fingerprint = useMemo(() => settings ? JSON.stringify(settings) : '', [settings]);
   const dirty = Boolean(settings && fingerprint !== original);
@@ -95,6 +97,41 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
     window.addEventListener('beforeunload', beforeUnload);
     return () => window.removeEventListener('beforeunload', beforeUnload);
   }, [dirty]);
+
+  const loadHistory = useCallback(async (quiet = false) => {
+    setHistoryBusy(true);
+    try {
+      const rows = await cmsApi.history(SETTINGS_PATH, 20);
+      setRevisions(rows);
+      if (!quiet) toast.success('Settings history refreshed');
+    } catch (error) {
+      toast.error('Could not load settings history', error instanceof Error ? error.message : 'Unknown error');
+    } finally { setHistoryBusy(false); }
+  }, [toast]);
+
+  useEffect(() => { if (document) void loadHistory(true); }, [document?.sha, loadHistory]);
+
+  const restoreRevision = async (revision: ContentRevision) => {
+    if (!document || busy || historyBusy) return;
+    if (dirty && !window.confirm('Restore this version and discard your unsaved settings?')) return;
+    if (!window.confirm(`Restore settings from ${revision.sha.slice(0, 10)}? This creates a new revision, so the restore can be undone.`)) return;
+    setHistoryBusy(true);
+    try {
+      const historical = await cmsApi.getRevision(SETTINGS_PATH, revision.sha);
+      const parsed = parseSettings(historical);
+      const content = `${JSON.stringify(parsed, null, 2)}\n`;
+      await cmsApi.update(SETTINGS_PATH, document.sha, content);
+      const refreshed = await cmsApi.get(SETTINGS_PATH);
+      const next = parseSettings(refreshed);
+      setDocument(refreshed);
+      setSettings(next);
+      setOriginal(JSON.stringify(next));
+      toast.success('Global site settings restored', `Restored ${revision.sha.slice(0, 10)} as a new revision.`);
+      await loadHistory(true);
+    } catch (error) {
+      toast.error('Could not restore settings', error instanceof Error ? error.message : 'Unknown error');
+    } finally { setHistoryBusy(false); }
+  };
 
   const publish = async () => {
     if (!document || !settings || !dirty || busy) return;
@@ -153,6 +190,14 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
         <label><span className={labelClass}>Support email</span><input type="email" value={settings.contact.supportEmail} onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, supportEmail: e.target.value } })} disabled={busy} className={inputClass} /></label>
         <label><span className={labelClass}>Booking URL</span><input value={settings.contact.bookingUrl} onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, bookingUrl: e.target.value } })} disabled={busy} className={inputClass} /></label>
         <label className="md:col-span-2"><span className={labelClass}>WhatsApp URL</span><input value={settings.contact.whatsappUrl} onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, whatsappUrl: e.target.value } })} disabled={busy} className={inputClass} /></label>
+      </section>
+
+      <section className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div><h3 className="flex items-center gap-2 text-base font-semibold text-neutral-900 dark:text-white"><History size={17} /> Settings history</h3><p className="mt-1 text-sm text-neutral-500">Every publish is preserved. Restore an earlier configuration without opening Git or the raw data editor.</p></div>
+          <button type="button" onClick={() => void loadHistory()} disabled={historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><RefreshCw size={14} className={historyBusy ? 'animate-spin' : ''} /> Refresh history</button>
+        </div>
+        {historyBusy && revisions.length === 0 ? <div className="rounded-xl bg-neutral-50 p-6 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">Loading previous settings…</div> : revisions.length === 0 ? <div className="rounded-xl bg-neutral-50 p-6 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">No settings history is available yet.</div> : <div className="space-y-2">{revisions.map((revision, index) => <div key={revision.sha} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 p-3 dark:border-neutral-800"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="text-sm font-semibold text-neutral-900 dark:text-white">{index === 0 ? 'Current publish' : `Previous version ${index}`}</span><code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">{revision.sha.slice(0, 10)}</code></div><div className="mt-1 truncate text-xs text-neutral-500">{revision.message || 'Settings update'} · {revision.author || 'Tayoca'} · {revision.created ? new Date(revision.created).toLocaleString() : 'Date unavailable'}</div></div><button type="button" onClick={() => void restoreRevision(revision)} disabled={index === 0 || historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><RotateCcw size={14} /> Restore</button></div>)}</div>}
       </section>
 
       <div className="rounded-xl bg-neutral-50 px-4 py-3 text-xs text-neutral-500 dark:bg-neutral-800/60">Canonical file: <code>{SETTINGS_PATH}</code>{document ? ` · ${document.sha.slice(0, 10)}` : ''}</div>
