@@ -137,7 +137,7 @@ const replaceMeta = (source: string, key: 'name' | 'property', identifier: strin
 
 const replaceProductPurchaseLink = (source: string, url: string, label: string): string => {
   const regex = /(<a\b[^>]*data-event=["']product_purchase_click["'][^>]*>)[\s\S]*?(<\/a>)/i;
-  return source.replace(regex, (full, open: string, close: string) => {
+  return source.replace(regex, (_full, open: string, close: string) => {
     const nextOpen = replaceAttribute(open, 'href', url);
     return `${nextOpen}${escapeHtml(label)}${close}`;
   });
