@@ -23,6 +23,7 @@ import { PageHeader } from '../components/layout';
 import { RichTextEditor } from '../components/cms/RichTextEditor';
 import { MediaLibrary, MediaSelect } from '../components/cms/MediaLibrary';
 import { PageSectionsEditor } from '../components/cms/PageSectionsEditor';
+import { GlobalSiteSettingsEditor } from '../components/cms/GlobalSiteSettingsEditor';
 import { cmsApi, type ContentDocument, type ContentEntry, type ContentRevision } from '../services/cms';
 import { useToast } from '../components/Toast';
 import {
@@ -42,7 +43,7 @@ import {
   type CmsPageSection,
 } from '../lib/cmsSections';
 
-type CmsCategory = 'all' | 'page' | 'blog' | 'product' | 'media' | 'data';
+type CmsCategory = 'all' | 'page' | 'blog' | 'product' | 'media' | 'data' | 'settings';
 type EditorTab = 'content' | 'sections' | 'seo' | 'preview' | 'history' | 'advanced';
 
 const categoryConfig: Array<{ id: CmsCategory; label: string; description: string; icon: React.ElementType }> = [
@@ -52,6 +53,7 @@ const categoryConfig: Array<{ id: CmsCategory; label: string; description: strin
   { id: 'product', label: 'Products', description: 'Product landing pages', icon: Boxes },
   { id: 'media', label: 'Media', description: 'Images and visual assets', icon: Images },
   { id: 'data', label: 'Site data', description: 'Structured site content', icon: Database },
+  { id: 'settings', label: 'Site settings', description: 'Navigation, footer and contact', icon: Settings2 },
 ];
 
 const emptyFields: CmsEditableFields = {
@@ -132,6 +134,7 @@ export const ContentPage: React.FC = () => {
     product: entries.filter((item) => item.kind === 'product').length,
     media: mediaCount,
     data: entries.filter((item) => item.kind === 'data').length,
+    settings: 1,
   }), [entries, mediaCount]);
 
   const visibleEntries = useMemo(() => {
@@ -489,13 +492,13 @@ export const ContentPage: React.FC = () => {
     <>
       <PageHeader
         title="Website CMS"
-        description="Manage Tayoca pages, sections, articles, products and media without editing code"
+        description="Manage Tayoca pages, sections, articles, products, media and global site settings without editing code"
         actions={(
           <div className="flex gap-2">
             <button onClick={() => void loadFiles()} disabled={busy} className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
               <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> Refresh
             </button>
-            {category !== 'media' && <button onClick={beginCreate} disabled={busy} className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900">
+            {category !== 'media' && category !== 'settings' && <button onClick={beginCreate} disabled={busy} className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900">
               <Plus size={15} /> New content
             </button>}
           </div>
@@ -503,7 +506,7 @@ export const ContentPage: React.FC = () => {
       />
 
       <div className="space-y-5">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
           {categoryConfig.map(({ id, label, description, icon: Icon }) => (
             <button key={id} onClick={() => setCategory(id)} className={`rounded-xl border p-4 text-left transition ${category === id ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900' : 'border-neutral-200 bg-white hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'}`}>
               <div className="flex items-center justify-between">
@@ -518,6 +521,8 @@ export const ContentPage: React.FC = () => {
 
         {category === 'media' ? (
           <MediaLibrary onCount={setMediaCount} />
+        ) : category === 'settings' ? (
+          <GlobalSiteSettingsEditor />
         ) : (
         <div className="grid min-h-[680px] grid-cols-1 gap-4 xl:grid-cols-[340px_1fr]">
           <aside className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
