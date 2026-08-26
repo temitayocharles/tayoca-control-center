@@ -120,7 +120,7 @@ const fromHtml = (html: string, sourceIndex: number): CmsPageSection => {
   const headingRoot = root.querySelector('.section-heading');
   const eyebrow = cleanText(headingRoot?.querySelector('.eyebrow') || root.querySelector('.eyebrow'));
   const heading = cleanText(headingRoot?.querySelector('h2, h3') || root.querySelector('h2, h3'));
-  const intro = cleanText(headingRoot?.querySelector('p:not(.eyebrow)'));
+  const intro = cleanText(headingRoot?.querySelector('p:not(.eyebrow)') || null);
   return {
     id: `section-${sourceIndex}`,
     sourceIndex,
