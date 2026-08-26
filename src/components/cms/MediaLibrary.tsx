@@ -17,7 +17,7 @@ const safeName = (name: string) => {
 };
 const asBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
   const reader = new FileReader();
-  reader.onload = () => { const v = String(reader.result || ''); const i = v.indexOf(','); i >= 0 ? resolve(v.slice(i + 1)) : reject(new Error('Could not encode image.')); };
+  reader.onload = () => { const v = String(reader.result || ''); const i = v.indexOf(','); if (i >= 0) resolve(v.slice(i + 1)); else reject(new Error('Could not encode image.')); };
   reader.onerror = () => reject(reader.error || new Error('Could not read image.'));
   reader.readAsDataURL(file);
 });
