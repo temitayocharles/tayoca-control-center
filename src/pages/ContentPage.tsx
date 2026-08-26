@@ -7,6 +7,8 @@ import {
   Database,
   FileText,
   Globe2,
+  History,
+  Eye,
   LayoutGrid,
   Images,
   Plus,
@@ -21,7 +23,7 @@ import { PageHeader } from '../components/layout';
 import { RichTextEditor } from '../components/cms/RichTextEditor';
 import { MediaLibrary, MediaSelect } from '../components/cms/MediaLibrary';
 import { PageSectionsEditor } from '../components/cms/PageSectionsEditor';
-import { cmsApi, type ContentDocument, type ContentEntry } from '../services/cms';
+import { cmsApi, type ContentDocument, type ContentEntry, type ContentRevision } from '../services/cms';
 import { useToast } from '../components/Toast';
 import {
   applyCmsFields,
@@ -41,7 +43,7 @@ import {
 } from '../lib/cmsSections';
 
 type CmsCategory = 'all' | 'page' | 'blog' | 'product' | 'media' | 'data';
-type EditorTab = 'content' | 'sections' | 'seo' | 'preview' | 'advanced';
+type EditorTab = 'content' | 'sections' | 'seo' | 'preview' | 'history' | 'advanced';
 
 const categoryConfig: Array<{ id: CmsCategory; label: string; description: string; icon: React.ElementType }> = [
   { id: 'all', label: 'All content', description: 'Everything published on Tayoca', icon: LayoutGrid },
@@ -101,6 +103,9 @@ export const ContentPage: React.FC = () => {
   const [mediaCount, setMediaCount] = useState<number | null>(null);
   const [sections, setSections] = useState<CmsPageSection[]>([]);
   const [originalSections, setOriginalSections] = useState<CmsPageSection[]>([]);
+  const [revisions, setRevisions] = useState<ContentRevision[]>([]);
+  const [historyBusy, setHistoryBusy] = useState(false);
+  const [revisionPreview, setRevisionPreview] = useState<{ revision: ContentRevision; document: ContentDocument } | null>(null);
 
   const currentKind = creating ? creationKind : classifyContent(path || selected?.path || '');
   const isManagedHtml = ['page', 'blog', 'product'].includes(currentKind);
@@ -180,6 +185,8 @@ export const ContentPage: React.FC = () => {
       setOriginalFields(nextFields);
       setSections(nextSections);
       setOriginalSections(nextSections);
+      setRevisions([]);
+      setRevisionPreview(null);
       setCreating(false);
       setTab('content');
       setAutoSlug(false);
@@ -208,6 +215,8 @@ export const ContentPage: React.FC = () => {
     setOriginalFields(emptyFields);
     setSections(nextSections);
     setOriginalSections([]);
+    setRevisions([]);
+    setRevisionPreview(null);
     setTab('content');
     setAutoSlug(true);
   };
@@ -226,6 +235,8 @@ export const ContentPage: React.FC = () => {
     setOriginalFields(emptyFields);
     setSections(kind === 'page' ? extractPageSections(starter) : []);
     setOriginalSections([]);
+    setRevisions([]);
+    setRevisionPreview(null);
     setTab('content');
   };
 
@@ -242,6 +253,63 @@ export const ContentPage: React.FC = () => {
     setSource(value);
     if (isManagedHtml) setFields(extractCmsFields(value, path));
     setSections(classifyContent(path) === 'page' ? extractPageSections(value) : []);
+  };
+
+  const loadHistory = async () => {
+    if (!selected || creating || historyBusy) return;
+    setHistoryBusy(true);
+    try {
+      setRevisions(await cmsApi.history(selected.path, 20));
+    } catch (error) {
+      toast.error('Could not load version history', error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setHistoryBusy(false);
+    }
+  };
+
+  const previewRevision = async (revision: ContentRevision) => {
+    if (!selected || historyBusy) return;
+    setHistoryBusy(true);
+    try {
+      const document = await cmsApi.getRevision(selected.path, revision.sha);
+      setRevisionPreview({ revision, document });
+    } catch (error) {
+      toast.error('Could not open this version', error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setHistoryBusy(false);
+    }
+  };
+
+  const restoreRevision = async (revision: ContentRevision) => {
+    if (!selected || busy || historyBusy) return;
+    const created = revision.created ? new Date(revision.created).toLocaleString() : revision.sha.slice(0, 10);
+    if (!window.confirm(`Restore the version from ${created}? The current version will remain in history so you can undo this restore.`)) return;
+    setBusy(true);
+    setHistoryBusy(true);
+    try {
+      const historical = revisionPreview?.revision.sha === revision.sha
+        ? revisionPreview.document
+        : await cmsApi.getRevision(selected.path, revision.sha);
+      await cmsApi.update(selected.path, selected.sha, historical.content);
+      const document = await cmsApi.get(selected.path);
+      setSelected(document);
+      setSource(document.content);
+      setOriginalContent(document.content);
+      const nextFields = extractCmsFields(document.content, document.path);
+      const nextSections = classifyContent(document.path) === 'page' ? extractPageSections(document.content) : [];
+      setFields(nextFields);
+      setOriginalFields(nextFields);
+      setSections(nextSections);
+      setOriginalSections(nextSections);
+      setRevisionPreview(null);
+      setRevisions(await cmsApi.history(selected.path, 20));
+      toast.success('Previous version restored', friendlyContentName(selected.path));
+    } catch (error) {
+      toast.error('Restore failed', error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setBusy(false);
+      setHistoryBusy(false);
+    }
   };
 
   const save = async () => {
@@ -271,8 +339,12 @@ export const ContentPage: React.FC = () => {
       setOriginalFields(nextFields);
       setSections(nextSections);
       setOriginalSections(nextSections);
+      setRevisions([]);
+      setRevisionPreview(null);
       setCreating(false);
       setAutoSlug(false);
+      setRevisions([]);
+      setRevisionPreview(null);
       setFiles(await cmsApi.list());
     } catch (error) {
       toast.error('Publish failed', error instanceof Error ? error.message : 'Unknown error');
@@ -509,10 +581,10 @@ export const ContentPage: React.FC = () => {
 
                 <div className="flex overflow-x-auto border-b border-neutral-200 px-5 dark:border-neutral-800">
                   {((currentKind === 'page'
-                    ? [['content', 'Content'], ['sections', 'Sections'], ['seo', 'SEO & social'], ['preview', 'Preview'], ['advanced', 'Advanced']]
-                    : [['content', 'Content'], ['seo', 'SEO & social'], ['preview', 'Preview'], ['advanced', 'Advanced']]
+                    ? [['content', 'Content'], ['sections', 'Sections'], ['seo', 'SEO & social'], ['preview', 'Preview'], ['history', 'History'], ['advanced', 'Advanced']]
+                    : [['content', 'Content'], ['seo', 'SEO & social'], ['preview', 'Preview'], ['history', 'History'], ['advanced', 'Advanced']]
                   ) as Array<[EditorTab, string]>).map(([id, label]) => (
-                    <button key={id} onClick={() => setTab(id)} className={`border-b-2 px-4 py-3 text-sm font-medium ${tab === id ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>{label}</button>
+                    <button key={id} onClick={() => { setTab(id); if (id === 'history') void loadHistory(); }} className={`border-b-2 px-4 py-3 text-sm font-medium ${tab === id ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>{label}</button>
                   ))}
                 </div>
 
@@ -554,6 +626,47 @@ export const ContentPage: React.FC = () => {
                           <iframe title={`Preview of ${friendlyContentName(path)}`} sandbox="" referrerPolicy="no-referrer" srcDoc={renderedContent} className="min-h-[680px] w-full rounded-xl border border-neutral-200 bg-white dark:border-neutral-700" />
                         </>
                       ) : <pre className="min-h-[500px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 p-4 text-sm dark:border-neutral-700">{renderedContent}</pre>}
+                    </div>
+                  )}
+
+
+                  {tab === 'history' && (
+                    <div className="max-w-5xl space-y-5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div><h3 className="text-base font-semibold text-neutral-900 dark:text-white">Version history</h3><p className="mt-1 text-sm text-neutral-500">Every publish is preserved. Preview an older version or restore it without using Git.</p></div>
+                        {!creating && <button onClick={() => void loadHistory()} disabled={historyBusy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-50 dark:border-neutral-700"><History size={15} /> {historyBusy ? 'Loading…' : 'Refresh history'}</button>}
+                      </div>
+                      {creating ? (
+                        <div className="rounded-xl bg-neutral-50 p-5 text-sm text-neutral-500 dark:bg-neutral-800/60">Version history becomes available after this content is published for the first time.</div>
+                      ) : historyBusy && revisions.length === 0 ? (
+                        <div className="rounded-xl bg-neutral-50 p-8 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">Loading previous versions…</div>
+                      ) : revisions.length === 0 ? (
+                        <div className="rounded-xl bg-neutral-50 p-8 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">No earlier versions were returned for this content.</div>
+                      ) : (
+                        <div className="space-y-3">
+                          {revisions.map((revision, index) => (
+                            <div key={revision.sha} className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+                              <div className="flex flex-wrap items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2"><span className="text-sm font-semibold text-neutral-900 dark:text-white">{index === 0 ? 'Latest change' : `Version ${revisions.length - index}`}</span><span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500 dark:bg-neutral-800">{revision.sha.slice(0, 10)}</span></div>
+                                  <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{revision.message || 'Content update'}</p>
+                                  <p className="mt-1 text-xs text-neutral-500">{revision.author || 'Tayoca'} · {revision.created ? new Date(revision.created).toLocaleString() : 'Date unavailable'}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button onClick={() => void previewRevision(revision)} disabled={historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-50 dark:border-neutral-700"><Eye size={14} /> Preview</button>
+                                  <button onClick={() => void restoreRevision(revision)} disabled={historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"><RotateCcw size={14} /> Restore</button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {revisionPreview && (
+                        <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 dark:border-blue-900/60 dark:bg-blue-950/20">
+                          <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div><div className="text-sm font-semibold text-blue-900 dark:text-blue-200">Previewing {revisionPreview.revision.sha.slice(0, 10)}</div><div className="mt-0.5 text-xs text-blue-700/70 dark:text-blue-300/70">This preview does not change the live page.</div></div><button onClick={() => setRevisionPreview(null)} className="text-sm font-medium text-blue-700 dark:text-blue-300">Close preview</button></div>
+                          {isManagedHtml ? <iframe title="Historical content preview" sandbox="" referrerPolicy="no-referrer" srcDoc={revisionPreview.document.content} className="min-h-[560px] w-full rounded-xl border border-blue-100 bg-white dark:border-blue-900" /> : <pre className="max-h-[560px] overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs dark:bg-neutral-950">{revisionPreview.document.content}</pre>}
+                        </div>
+                      )}
                     </div>
                   )}
 
