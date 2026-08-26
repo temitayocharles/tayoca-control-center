@@ -10,9 +10,9 @@ export const cmsApi = {
   async create(path: string, content: string): Promise<{ ok: boolean; path: string; sha?: string }> { return controlRequest('create_content', { path, content }); },
   async update(path: string, sha: string, content: string): Promise<{ ok: boolean; path: string; sha?: string }> { return controlRequest('update_content', { path, sha, content }); },
   async delete(path: string, sha: string): Promise<{ ok: boolean }> { return controlRequest('delete_content', { path, sha }); },
-  async listMedia(): Promise<MediaEntry[]> { const r = await controlRequest<{ data: MediaEntry[] }>('list_media'); return r.data || []; },
-  async uploadMedia(path: string, contentBase64: string, mime: string): Promise<{ ok: boolean; path: string; sha?: string }> { return controlRequest('create_media', { path, contentBase64, mime }); },
-  async deleteMedia(path: string, sha: string): Promise<{ ok: boolean }> { return controlRequest('delete_media', { path, sha }); },
+  async listMedia(): Promise<MediaEntry[]> { const r = await controlRequest<{ data: MediaEntry[] }>('list_content', { media: true }); return r.data || []; },
+  async uploadMedia(path: string, contentBase64: string, mime: string): Promise<{ ok: boolean; path: string; sha?: string }> { return controlRequest('create_content', { media: true, path, contentBase64, mime }); },
+  async deleteMedia(path: string, sha: string): Promise<{ ok: boolean }> { return controlRequest('delete_content', { media: true, path, sha }); },
   async findMediaReferences(path: string): Promise<ContentEntry[]> {
     const needle = `/${path.replace(/^public\//, '')}`;
     const entries = await this.list();
