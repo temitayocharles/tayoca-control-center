@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Lint and build
+    name: Lint, build, and browser smoke
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -44,3 +44,51 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Browser startup smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/tayoca-vite-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for _ in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          if [[ "$ready" != "true" ]]; then
+            cat /tmp/tayoca-vite-preview.log
+            echo "::error::Vite preview did not become ready"
+            exit 1
+          fi
+
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [[ -z "$chrome" ]]; then
+            echo "::error::No Chrome/Chromium binary is available on the runner"
+            exit 1
+          fi
+
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            http://127.0.0.1:4173/ > /tmp/tayoca-rendered-dom.html
+
+          grep -q 'Tayoca Control' /tmp/tayoca-rendered-dom.html
+          grep -q 'Dashboard' /tmp/tayoca-rendered-dom.html
+          grep -q 'Workflow Studio' /tmp/tayoca-rendered-dom.html
+
+          if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
+            echo "::error::React did not mount into #root"
+            exit 1
+          fi
