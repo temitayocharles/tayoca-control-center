@@ -76,6 +76,7 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
 
   const fingerprint = useMemo(() => settings ? JSON.stringify(settings) : '', [settings]);
   const dirty = Boolean(settings && fingerprint !== original);
+  const documentSha = document?.sha;
 
   const load = useCallback(async (quiet = false) => {
     setBusy(true);
@@ -109,7 +110,7 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
     } finally { setHistoryBusy(false); }
   }, [toast]);
 
-  useEffect(() => { if (document) void loadHistory(true); }, [document?.sha, loadHistory]);
+  useEffect(() => { if (documentSha) void loadHistory(true); }, [documentSha, loadHistory]);
 
   const restoreRevision = async (revision: ContentRevision) => {
     if (!document || busy || historyBusy) return;
