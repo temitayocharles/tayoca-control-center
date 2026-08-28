@@ -127,6 +127,22 @@ jobs:
             exit 1
           fi
 
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            http://127.0.0.1:4173/backups > /tmp/tayoca-backups-rendered-dom.html
+
+          grep -q 'Restore backup' /tmp/tayoca-backups-rendered-dom.html
+          grep -q 'unpublished drafts' /tmp/tayoca-backups-rendered-dom.html
+          if grep -q 'Import to n8n requires' /tmp/tayoca-backups-rendered-dom.html; then
+            echo "::error::Placeholder backup import behavior is visible"
+            exit 1
+          fi
+
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
             exit 1

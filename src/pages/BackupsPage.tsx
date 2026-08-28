@@ -4,6 +4,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { PageHeader } from '../components/layout';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useWorkflows } from '../hooks/useN8n';
+import { n8nApi } from '../services/n8n';
 import { useSettings } from '../hooks/useSettings';
 import { useAuth } from '../contexts/AuthContext';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -15,6 +16,7 @@ const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 export const BackupsPage: React.FC = () => {
   const [selectedWorkflows, setSelectedWorkflows] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -176,38 +178,102 @@ export const BackupsPage: React.FC = () => {
     }
   };
 
-  const handleImportClick = () => {
+  const handleRestoreClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
+    const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
+    const MAX_RESTORE_WORKFLOWS = 25;
 
-      // Check if it's a bundle or single workflow
-      if (data.workflows && Array.isArray(data.workflows)) {
-        toast.info('Import preview', `Found ${data.workflows.length} workflows in bundle`);
-        // In a real implementation, you would send these to the n8n API
-      } else if (data.id && data.name && data.nodes) {
-        toast.info('Import preview', `Found workflow: ${data.name}`);
-        // In a real implementation, you would send this to the n8n API
-      } else {
-        toast.error('Invalid file', 'File does not contain valid workflow data');
+    try {
+      if (file.size > MAX_BACKUP_BYTES) {
+        throw new Error('Backup file is larger than the 2 MB restore limit.');
       }
 
-      // Note: Actual import would require n8n API endpoint for creating workflows
-      toast.info('Note', 'Import to n8n requires the POST /workflows API endpoint');
-    } catch {
-      toast.error('Import failed', 'Unable to parse JSON file');
-    }
+      const text = await file.text();
+      const parsed: unknown = JSON.parse(text);
+      const root = parsed as Record<string, unknown>;
+      const candidates: unknown[] = Array.isArray(root?.workflows) ? root.workflows : [parsed];
 
-    // Reset the input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      if (candidates.length === 0 || candidates.length > MAX_RESTORE_WORKFLOWS) {
+        throw new Error(`A backup must contain between 1 and ${MAX_RESTORE_WORKFLOWS} workflows.`);
+      }
+
+      const drafts = candidates.map((candidate, index) => {
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+          throw new Error(`Workflow ${index + 1} is not a valid object.`);
+        }
+        const item = candidate as Record<string, unknown>;
+        const name = typeof item.name === 'string' ? item.name.trim() : '';
+        const nodes = item.nodes;
+        const connections = item.connections;
+        if (!name || !Array.isArray(nodes) || !connections || typeof connections !== 'object' || Array.isArray(connections)) {
+          throw new Error(`Workflow ${index + 1} must include name, nodes[], and connections.`);
+        }
+        if (nodes.length > 1000) {
+          throw new Error(`Workflow ${index + 1} exceeds the 1,000-node restore limit.`);
+        }
+        return {
+          name,
+          nodes: nodes as Workflow['nodes'],
+          connections: connections as Workflow['connections'],
+          ...(item.settings && typeof item.settings === 'object' && !Array.isArray(item.settings)
+            ? { settings: item.settings as Record<string, unknown> }
+            : {}),
+          ...(typeof item.description === 'string' ? { description: item.description } : {}),
+        };
+      });
+
+      if (!window.confirm(`Restore ${drafts.length} workflow${drafts.length === 1 ? '' : 's'} as unpublished drafts? Existing workflows will not be overwritten.`)) {
+        return;
+      }
+
+      setIsRestoring(true);
+      const usedNames = new Set((workflows || []).map(workflow => workflow.name.toLowerCase()));
+      const makeUniqueName = (baseName: string) => {
+        if (!usedNames.has(baseName.toLowerCase())) {
+          usedNames.add(baseName.toLowerCase());
+          return baseName;
+        }
+        let suffix = 1;
+        let candidate = `${baseName} (restored)`;
+        while (usedNames.has(candidate.toLowerCase())) {
+          suffix += 1;
+          candidate = `${baseName} (restored ${suffix})`;
+        }
+        usedNames.add(candidate.toLowerCase());
+        return candidate;
+      };
+
+      let restored = 0;
+      const failures: string[] = [];
+      for (const draft of drafts) {
+        const restoreName = makeUniqueName(draft.name);
+        try {
+          await n8nApi.createWorkflow({ ...draft, name: restoreName });
+          restored += 1;
+        } catch (error) {
+          failures.push(`${restoreName}: ${error instanceof Error ? error.message : 'unknown error'}`);
+        }
+      }
+
+      await refetch();
+      if (restored > 0) {
+        toast.success('Backup restored', `${restored} unpublished draft${restored === 1 ? '' : 's'} created`);
+      }
+      if (failures.length > 0) {
+        toast.error('Some workflows could not be restored', `${failures.length} failed. No existing workflows were overwritten.`);
+        console.error('Restore failures', failures);
+      }
+    } catch (error) {
+      toast.error('Restore failed', error instanceof Error ? error.message : 'Unable to read backup file');
+    } finally {
+      setIsRestoring(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -215,15 +281,16 @@ export const BackupsPage: React.FC = () => {
     <>
       <PageHeader
         title="Backups"
-        description="Export and import workflow configurations"
+        description="Export workflow configurations and restore backups as unpublished drafts"
         actions={
           <div className="flex items-center gap-2">
             <button
-              onClick={handleImportClick}
+              onClick={handleRestoreClick}
+              disabled={isRestoring}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             >
-              <Upload size={16} />
-              Import
+              {isRestoring ? <RefreshCw size={16} className="animate-spin" /> : <Upload size={16} />}
+              {isRestoring ? 'Restoring…' : 'Restore backup'}
             </button>
             <button
               onClick={exportAllWorkflows}
@@ -248,7 +315,7 @@ export const BackupsPage: React.FC = () => {
         ref={fileInputRef}
         type="file"
         accept=".json"
-        onChange={handleFileImport}
+        onChange={handleFileRestore}
         className="hidden"
       />
 
@@ -312,8 +379,8 @@ export const BackupsPage: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Backup Information</h4>
                   <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                    Exports include workflow configuration only. Credentials are not included for security reasons.
-                    To restore workflows, use the n8n UI import feature or API.
+                    Exports include workflow configuration only; credentials are never included. Restoring a backup creates
+                    new unpublished drafts through the guarded Control Center gateway and never overwrites existing workflows.
                   </p>
                 </div>
               </div>
