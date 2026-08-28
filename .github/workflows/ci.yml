@@ -122,6 +122,11 @@ jobs:
 
           grep -q 'Settings' /tmp/tayoca-api-keys-compat-dom.html
           grep -q 'Credentials are managed server-side' /tmp/tayoca-api-keys-compat-dom.html
+          grep -q 'not background or server-push notifications' /tmp/tayoca-api-keys-compat-dom.html
+          if grep -q 'Never miss an important execution' src/components/LandingPage.tsx; then
+            echo "::error::Landing page overstates in-session notification coverage"
+            exit 1
+          fi
           if grep -q 'API Keys & Credentials' /tmp/tayoca-api-keys-compat-dom.html; then
             echo "::error::Legacy credential catalog is still reachable through /api-keys"
             exit 1

@@ -159,7 +159,7 @@ export const LandingPage: React.FC = () => {
     {
       icon: Bell,
       title: 'Smart Notifications',
-      description: 'Get browser notifications when workflows fail or complete. Never miss an important execution.',
+      description: 'Get in-session browser notifications for workflow failures or completions while the Dashboard is open and refreshing.',
     },
     {
       icon: Shield,
