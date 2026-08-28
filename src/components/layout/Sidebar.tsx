@@ -5,7 +5,6 @@ import {
   Workflow,
   Activity,
   Settings,
-  LogOut,
   X,
   Menu,
   AlertCircle,
@@ -19,9 +18,7 @@ import {
   Braces,
 } from 'lucide-react';
 import { useSidebar } from '../../contexts/SidebarContext';
-import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { isSupabaseConfigured } from '../../lib/supabase';
 import { ThemeToggle } from '../ThemeToggle';
 
 interface NavItem {
@@ -80,14 +77,9 @@ const bottomNavItems: NavItem[] = [
 
 export const Sidebar: React.FC = () => {
   const { isMobileOpen, closeMobile } = useSidebar();
-  const { user, signOut, isAuthenticated } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
   const location = useLocation();
 
-  const handleSignOut = async () => {
-    await signOut();
-    closeMobile();
-  };
 
   const NavItemComponent: React.FC<{ item: NavItem }> = ({ item }) => {
     const Icon = item.icon;
@@ -155,16 +147,7 @@ export const Sidebar: React.FC = () => {
           </span>
         </div>
 
-        {/* User / Sign Out */}
-        {isSupabaseConfigured() && isAuthenticated && (
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full transition-colors text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-900 dark:hover:text-white"
-          >
-            <LogOut size={20} className="flex-shrink-0" />
-            <span className="truncate">{user?.email || 'Sign out'}</span>
-          </button>
-        )}
+        
       </div>
 
     </>

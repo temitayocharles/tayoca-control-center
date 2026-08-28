@@ -182,6 +182,16 @@ jobs:
             exit 1
           fi
 
+
+          if grep -R -q -E 'AuthModal|LandingPage|signInWithPassword|auth\.signUp|resetPasswordForEmail|VITE_SUPABASE_' src; then
+            echo "::error::Legacy browser authentication surface has returned"
+            exit 1
+          fi
+          if grep -q '@supabase/supabase-js' package.json package-lock.json; then
+            echo "::error::Supabase auth dependency is still present"
+            exit 1
+          fi
+
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
             exit 1
