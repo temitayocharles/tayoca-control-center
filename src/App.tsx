@@ -5,13 +5,10 @@ import { MainLayout } from './components/layout';
 import { SettingsModal } from './components/SettingsModal';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { CommandPalette } from './components/CommandPalette';
-import { LandingPage } from './components/LandingPage';
 import { useCommandPalette } from './hooks/useCommandPalette';
 import { useSettings } from './hooks/useSettings';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
-import { isSupabaseConfigured } from './lib/supabase';
 
 // Lazy load pages for code splitting
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -46,7 +43,6 @@ const AppContent: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  const { isAuthenticated, loading: authLoading } = useAuth();
   const { settings, updateSettings, resetSettings } = useSettings();
   const navigate = useNavigate();
   const commandPalette = useCommandPalette({
@@ -73,20 +69,6 @@ const AppContent: React.FC = () => {
     onToggleTheme: toggleTheme,
     onCommandPalette: commandPalette.toggle,
   });
-
-  // Show loading state while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-neutral-500" />
-      </div>
-    );
-  }
-
-  // Show landing page if Supabase is configured and user is not authenticated
-  if (isSupabaseConfigured() && !isAuthenticated) {
-    return <LandingPage />;
-  }
 
   return (
     <>
