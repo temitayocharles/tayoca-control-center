@@ -192,6 +192,22 @@ jobs:
             exit 1
           fi
 
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            http://127.0.0.1:4173/queue > /tmp/tayoca-active-executions-dom.html
+
+          grep -q 'Active Executions' /tmp/tayoca-active-executions-dom.html
+          grep -q 'running or waiting' /tmp/tayoca-active-executions-dom.html
+          if grep -q 'Queue Monitor' /tmp/tayoca-active-executions-dom.html || grep -q 'Waiting in Queue' /tmp/tayoca-active-executions-dom.html; then
+            echo "::error::Execution-state view is overstating native queue visibility"
+            exit 1
+          fi
+
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
             exit 1
