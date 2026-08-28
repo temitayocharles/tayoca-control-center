@@ -25,7 +25,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
   const navigate = useNavigate();
 
   const { isAuthenticated } = useAuth();
-  const { settings, isConfigured } = useSettings();
+  const { settings } = useSettings();
   const { favorites, toggleFavorite } = useFavorites();
   const toast = useToast();
 
