@@ -143,6 +143,36 @@ jobs:
             exit 1
           fi
 
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            http://127.0.0.1:4173/alerts > /tmp/tayoca-alerts-compat-dom.html
+
+          grep -q 'Error Log' /tmp/tayoca-alerts-compat-dom.html
+          if grep -q 'Alert Rules' /tmp/tayoca-alerts-compat-dom.html; then
+            echo "::error::Browser-local alert management is still reachable through /alerts"
+            exit 1
+          fi
+
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            http://127.0.0.1:4173/errors > /tmp/tayoca-errors-rendered-dom.html
+
+          grep -q 'does not replay the failed execution' /tmp/tayoca-errors-rendered-dom.html
+          if grep -q 'Retry All' src/pages/ErrorLogPage.tsx || grep -q 'Retry workflow' src/pages/ErrorLogPage.tsx; then
+            echo "::error::Error Log source still claims unsupported execution-retry semantics"
+            exit 1
+          fi
+
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
             exit 1

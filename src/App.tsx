@@ -30,7 +30,6 @@ const QueueMonitorPage = lazy(() => import('./pages/QueueMonitorPage').then(m =>
 // Operations Pages
 const SchedulesPage = lazy(() => import('./pages/SchedulesPage').then(m => ({ default: m.SchedulesPage })));
 const WebhooksPage = lazy(() => import('./pages/WebhooksPage').then(m => ({ default: m.WebhooksPage })));
-const AlertsPage = lazy(() => import('./pages/AlertsPage').then(m => ({ default: m.AlertsPage })));
 
 // Admin Pages
 const BackupsPage = lazy(() => import('./pages/BackupsPage').then(m => ({ default: m.BackupsPage })));
@@ -110,7 +109,7 @@ const AppContent: React.FC = () => {
             {/* Operations */}
             <Route path="/schedules" element={<SchedulesPage />} />
             <Route path="/webhooks" element={<WebhooksPage />} />
-            <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/alerts" element={<Navigate to="/errors" replace />} />
 
             {/* Advanced operations */}
             <Route path="/api-keys" element={<Navigate to="/settings" replace />} />

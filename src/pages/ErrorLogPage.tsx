@@ -21,7 +21,7 @@ export const ErrorLogPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [isRetrying, setIsRetrying] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const { isAuthenticated } = useAuth();
   const { settings } = useSettings();
   const toast = useToast();
@@ -104,12 +104,12 @@ export const ErrorLogPage: React.FC = () => {
     toast.info('Refreshing error log...');
   };
 
-  const handleRetry = async (execution: Execution) => {
+  const handleRunWorkflow = async (execution: Execution) => {
     try {
       await triggerWorkflow.mutateAsync(execution.workflowId);
-      toast.success('Workflow triggered', workflowMap.get(execution.workflowId) || 'Workflow');
+      toast.success('Workflow run requested', workflowMap.get(execution.workflowId) || 'Workflow');
     } catch {
-      toast.error('Failed to trigger workflow');
+      toast.error('Workflow run failed');
     }
   };
 
@@ -143,10 +143,10 @@ export const ErrorLogPage: React.FC = () => {
   const allOnPageSelected = paginatedErrors.length > 0 &&
     paginatedErrors.every(e => selectedIds.has(e.id));
 
-  const handleBulkRetry = async () => {
+  const handleBulkRun = async () => {
     if (selectedIds.size === 0) return;
 
-    setIsRetrying(true);
+    setIsRunning(true);
     const uniqueWorkflowIds = new Set<string>();
 
     // Get unique workflow IDs from selected errors
@@ -166,7 +166,7 @@ export const ErrorLogPage: React.FC = () => {
       }
     }
 
-    setIsRetrying(false);
+    setIsRunning(false);
     setSelectedIds(new Set());
 
     if (successCount > 0) {
@@ -218,6 +218,10 @@ export const ErrorLogPage: React.FC = () => {
         }
       />
 
+      <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+        Run workflow launches the workflow through its supported production trigger. It does not replay the failed execution or reuse its original payload/state.
+      </div>
+
       <ErrorBoundary>
         <div className="space-y-3">
           {isLoading ? (
@@ -258,12 +262,12 @@ export const ErrorLogPage: React.FC = () => {
                     {selectedIds.size} selected
                   </span>
                   <button
-                    onClick={handleBulkRetry}
-                    disabled={isRetrying}
+                    onClick={handleBulkRun}
+                    disabled={isRunning}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-neutral-900 dark:bg-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
                   >
-                    <RotateCcw size={14} className={isRetrying ? 'animate-spin' : ''} />
-                    {isRetrying ? 'Retrying...' : 'Retry All'}
+                    <RotateCcw size={14} className={isRunning ? 'animate-spin' : ''} />
+                    {isRunning ? 'Running...' : 'Run selected workflows'}
                   </button>
                   <button
                     onClick={() => setSelectedIds(new Set())}
@@ -320,13 +324,13 @@ export const ErrorLogPage: React.FC = () => {
 
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <button
-                            onClick={() => handleRetry(execution)}
+                            onClick={() => handleRunWorkflow(execution)}
                             disabled={triggerWorkflow.isPending}
                             className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
-                            title="Retry workflow"
+                            title="Run the workflow using its supported production trigger; this does not replay the failed execution"
                           >
                             <RotateCcw size={14} />
-                            Retry
+                            Run workflow
                           </button>
                           <Link
                             to={`/workflows?highlight=${execution.workflowId}`}
