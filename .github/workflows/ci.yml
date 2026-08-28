@@ -167,9 +167,9 @@ jobs:
             --dump-dom \
             http://127.0.0.1:4173/errors > /tmp/tayoca-errors-rendered-dom.html
 
-          grep -q 'Run workflow' /tmp/tayoca-errors-rendered-dom.html
-          if grep -q 'Retry All' /tmp/tayoca-errors-rendered-dom.html || grep -q 'Retry workflow' /tmp/tayoca-errors-rendered-dom.html; then
-            echo "::error::Error Log still claims unsupported execution-retry semantics"
+          grep -q 'does not replay the failed execution' /tmp/tayoca-errors-rendered-dom.html
+          if grep -q 'Retry All' src/pages/ErrorLogPage.tsx || grep -q 'Retry workflow' src/pages/ErrorLogPage.tsx; then
+            echo "::error::Error Log source still claims unsupported execution-retry semantics"
             exit 1
           fi
 

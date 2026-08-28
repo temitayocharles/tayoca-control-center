@@ -218,6 +218,10 @@ export const ErrorLogPage: React.FC = () => {
         }
       />
 
+      <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+        Run workflow launches the workflow through its supported production trigger. It does not replay the failed execution or reuse its original payload/state.
+      </div>
+
       <ErrorBoundary>
         <div className="space-y-3">
           {isLoading ? (
