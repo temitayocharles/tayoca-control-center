@@ -14,7 +14,6 @@ import {
   ListTodo,
   Calendar,
   Webhook,
-  Bell,
   Archive,
   FilePenLine,
   Braces,
@@ -63,7 +62,6 @@ const navSections: NavSection[] = [
     title: 'Operations',
     items: [
       { icon: Calendar, label: 'Schedules', path: '/schedules' },
-      { icon: Bell, label: 'Alerts', path: '/alerts' },
     ],
   },
   {
