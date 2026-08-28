@@ -1,5 +1,5 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { MainLayout } from './components/layout';
 import { SettingsModal } from './components/SettingsModal';
@@ -33,7 +33,6 @@ const WebhooksPage = lazy(() => import('./pages/WebhooksPage').then(m => ({ defa
 const AlertsPage = lazy(() => import('./pages/AlertsPage').then(m => ({ default: m.AlertsPage })));
 
 // Admin Pages
-const ApiKeysPage = lazy(() => import('./pages/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
 const BackupsPage = lazy(() => import('./pages/BackupsPage').then(m => ({ default: m.BackupsPage })));
 
 // Loading fallback for lazy-loaded routes
@@ -113,8 +112,8 @@ const AppContent: React.FC = () => {
             <Route path="/webhooks" element={<WebhooksPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
 
-            {/* Admin */}
-            <Route path="/api-keys" element={<ApiKeysPage />} />
+            {/* Advanced operations */}
+            <Route path="/api-keys" element={<Navigate to="/settings" replace />} />
             <Route path="/backups" element={<BackupsPage />} />
 
             {/* Settings */}

@@ -111,6 +111,22 @@ jobs:
           grep -q 'Site settings' /tmp/tayoca-cms-rendered-dom.html
           grep -q 'Navigation, footer and contact' /tmp/tayoca-cms-rendered-dom.html
 
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            http://127.0.0.1:4173/api-keys > /tmp/tayoca-api-keys-compat-dom.html
+
+          grep -q 'Settings' /tmp/tayoca-api-keys-compat-dom.html
+          grep -q 'Credentials are managed server-side' /tmp/tayoca-api-keys-compat-dom.html
+          if grep -q 'API Keys & Credentials' /tmp/tayoca-api-keys-compat-dom.html; then
+            echo "::error::Legacy credential catalog is still reachable through /api-keys"
+            exit 1
+          fi
+
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
             exit 1
