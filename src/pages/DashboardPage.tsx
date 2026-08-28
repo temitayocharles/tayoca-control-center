@@ -15,6 +15,8 @@ import { useExecutionNotifications } from '../hooks/useExecutionNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { useToast } from '../components/Toast';
+import { n8nApi } from '../services/n8n';
+import { cmsApi } from '../services/cms';
 import type { Execution, Workflow as WorkflowType } from '../types';
 
 interface DashboardPageProps {
@@ -28,6 +30,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
   const { settings } = useSettings();
   const { favorites, toggleFavorite } = useFavorites();
   const toast = useToast();
+  const [controlHealth, setControlHealth] = React.useState<{
+    automation: 'checking' | 'healthy' | 'error';
+    cms: 'checking' | 'healthy' | 'error';
+    settingsHistory: number | null;
+    settingsSha: string | null;
+  }>({ automation: 'checking', cms: 'checking', settingsHistory: null, settingsSha: null });
 
   const refreshOptions = {
     autoRefresh: settings.autoRefresh,
@@ -50,9 +58,44 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
 
   useExecutionNotifications(executions);
 
+  const checkControlHealth = React.useCallback(async () => {
+    setControlHealth(prev => ({ ...prev, automation: 'checking', cms: 'checking' }));
+    const [automationResult, cmsResult] = await Promise.allSettled([
+      n8nApi.testConnection(),
+      Promise.all([
+        cmsApi.get('public/data/site-settings.json'),
+        cmsApi.history('public/data/site-settings.json', 20),
+      ]),
+    ]);
+
+    const automationHealthy = automationResult.status === 'fulfilled' && automationResult.value === true;
+    if (cmsResult.status === 'fulfilled') {
+      const [settingsDocument, revisions] = cmsResult.value;
+      setControlHealth({
+        automation: automationHealthy ? 'healthy' : 'error',
+        cms: 'healthy',
+        settingsHistory: revisions.length,
+        settingsSha: settingsDocument.sha,
+      });
+      return;
+    }
+
+    setControlHealth({
+      automation: automationHealthy ? 'healthy' : 'error',
+      cms: 'error',
+      settingsHistory: null,
+      settingsSha: null,
+    });
+  }, []);
+
+  React.useEffect(() => {
+    if (shouldFetchData) void checkControlHealth();
+  }, [shouldFetchData, checkControlHealth]);
+
   const handleRefresh = () => {
     refetchWorkflows();
     refetchExecutions();
+    void checkControlHealth();
     toast.info('Refreshing data...');
   };
 
@@ -134,6 +177,40 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
           <div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Preferences</div><div className="mt-0.5 text-xs text-neutral-500">Refresh, display and notifications</div></div>
         </button>
       </div>
+
+      <section className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">Control health</h2>
+            <p className="mt-0.5 text-xs text-neutral-500">Live checks through the guarded server-side control gateway.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800">
+            <div className="text-xs font-medium text-neutral-500">Automation gateway</div>
+            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
+              {controlHealth.automation === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.automation === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
+              {controlHealth.automation === 'healthy' ? 'Connected' : controlHealth.automation === 'error' ? 'Unavailable' : 'Checking'}
+            </div>
+          </div>
+          <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800">
+            <div className="text-xs font-medium text-neutral-500">Canonical CMS</div>
+            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
+              {controlHealth.cms === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.cms === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
+              {controlHealth.cms === 'healthy' ? 'Site settings readable' : controlHealth.cms === 'error' ? 'Unavailable' : 'Checking'}
+            </div>
+            {controlHealth.settingsSha && <div className="mt-1 text-[11px] text-neutral-400">SHA {controlHealth.settingsSha.slice(0, 10)}</div>}
+          </div>
+          <button onClick={() => navigate('/content')} className="rounded-lg border border-neutral-200 p-3 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800">
+            <div className="text-xs font-medium text-neutral-500">Settings recovery</div>
+            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
+              {controlHealth.cms === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.cms === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
+              {controlHealth.settingsHistory === null ? (controlHealth.cms === 'error' ? 'Unavailable' : 'Checking') : `${controlHealth.settingsHistory} recent revision${controlHealth.settingsHistory === 1 ? '' : 's'}`}
+            </div>
+            <div className="mt-1 text-[11px] text-neutral-400">Open Website CMS to review or restore settings.</div>
+          </button>
+        </div>
+      </section>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
