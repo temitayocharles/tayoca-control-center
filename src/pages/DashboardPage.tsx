@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Workflow, Play, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Workflow, Play, CheckCircle, AlertCircle, RefreshCw, FilePenLine, Braces, SlidersHorizontal } from 'lucide-react';
 import { PageHeader } from '../components/layout';
 import { StatCard } from '../components/StatCard';
 import { Section } from '../components/Section';
@@ -108,7 +108,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
     <>
       <PageHeader
         title="Dashboard"
-        description="Overview of your n8n workflows and executions"
+        description="Tayoca operations overview across automation and website management"
         actions={
           <button
             onClick={handleRefresh}
@@ -120,29 +120,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
         }
       />
 
-      {/* Not Configured State */}
-      {!isConfigured && (
-        <div className="mb-6 p-4 rounded-lg border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={20} className="text-amber-600 dark:text-amber-500 mt-0.5" />
-            <div>
-              <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400">
-                Connect to your n8n instance
-              </h3>
-              <p className="text-sm text-amber-700 dark:text-amber-500/80 mt-1">
-                Configure your n8n URL and API key in{' '}
-                <button
-                  onClick={onShowSettings}
-                  className="underline hover:no-underline"
-                >
-                  Settings
-                </button>{' '}
-                to start monitoring your workflows.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <button onClick={() => navigate('/content')} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+          <FilePenLine size={20} className="text-neutral-500" />
+          <div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Website CMS</div><div className="mt-0.5 text-xs text-neutral-500">Pages, media, products and site settings</div></div>
+        </button>
+        <button onClick={() => navigate('/workflow-studio')} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+          <Braces size={20} className="text-neutral-500" />
+          <div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Workflow Studio</div><div className="mt-0.5 text-xs text-neutral-500">Create and manage automations</div></div>
+        </button>
+        <button onClick={onShowSettings} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+          <SlidersHorizontal size={20} className="text-neutral-500" />
+          <div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Preferences</div><div className="mt-0.5 text-xs text-neutral-500">Refresh, display and notifications</div></div>
+        </button>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">

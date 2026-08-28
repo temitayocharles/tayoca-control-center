@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Workflow,
   Activity,
-  Key,
   Settings,
   LogOut,
   X,
@@ -58,21 +57,20 @@ const navSections: NavSection[] = [
       { icon: AlertCircle, label: 'Error Log', path: '/errors' },
       { icon: BarChart3, label: 'Performance', path: '/performance' },
       { icon: FileText, label: 'Usage Reports', path: '/reports' },
-      { icon: ListTodo, label: 'Queue', path: '/queue' },
     ],
   },
   {
     title: 'Operations',
     items: [
       { icon: Calendar, label: 'Schedules', path: '/schedules' },
-      { icon: Webhook, label: 'Webhooks', path: '/webhooks' },
       { icon: Bell, label: 'Alerts', path: '/alerts' },
     ],
   },
   {
-    title: 'Admin',
+    title: 'Advanced n8n',
     items: [
-      { icon: Key, label: 'API Keys', path: '/api-keys' },
+      { icon: ListTodo, label: 'Queue', path: '/queue' },
+      { icon: Webhook, label: 'Webhooks', path: '/webhooks' },
       { icon: Archive, label: 'Backups', path: '/backups' },
     ],
   },
