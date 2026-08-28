@@ -19,6 +19,7 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+  const { workflows, onRefresh } = options;
 
   const open = useCallback(() => {
     setIsOpen(true);
@@ -112,7 +113,7 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
 
   const actionCommands: Command[] = useMemo(
     () => [
-      ...(options.onRefresh
+      ...(onRefresh
         ? [
             {
               id: 'action-refresh',
@@ -121,19 +122,19 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
               category: 'action' as const,
               keywords: ['reload', 'update', 'sync'],
               action: () => {
-                options.onRefresh?.();
+                onRefresh?.();
                 close();
               },
             },
           ]
         : []),
     ],
-    [options.onRefresh, close]
+    [onRefresh, close]
   );
 
   const workflowCommands: Command[] = useMemo(() => {
-    if (!options.workflows) return [];
-    return options.workflows.map((workflow) => ({
+    if (!workflows) return [];
+    return workflows.map((workflow) => ({
       id: `workflow-${workflow.id}`,
       label: workflow.name,
       description: 'Open workflow',
@@ -144,7 +145,7 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
         close();
       },
     }));
-  }, [options.workflows, navigate, close]);
+  }, [workflows, navigate, close]);
 
   const allCommands = useMemo(
     () => [...navigationCommands, ...actionCommands, ...workflowCommands],

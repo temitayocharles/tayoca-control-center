@@ -18,7 +18,7 @@ export const WorkflowStudioPage: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const filtered = useMemo(()=>workflows.filter(w=>w.name.toLowerCase().includes(search.toLowerCase())),[workflows,search]);
   const reload = async () => { const r=await n8nApi.getAllWorkflows(); setWorkflows(r.data || []); };
-  useEffect(()=>{ reload().catch(e=>toast.error('Failed to load workflows',e.message)); },[]);
+  useEffect(()=>{ reload().catch(e=>toast.error('Failed to load workflows',e.message)); },[toast]);
   const select = async (w: Workflow) => { setBusy(true); try { const full=await n8nApi.getWorkflow(w.id); setSelected(full); setEditor(JSON.stringify(draftOf(full),null,2)); setCreating(false); } finally { setBusy(false); } };
   const createNew=()=>{setSelected(null);setCreating(true);setEditor(JSON.stringify(blank,null,2));};
   const parse=()=>{ const d=JSON.parse(editor); if(!d.name||!Array.isArray(d.nodes)||!d.connections) throw new Error('Workflow must contain name, nodes[], and connections.'); return d; };
