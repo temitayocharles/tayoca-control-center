@@ -89,6 +89,10 @@ jobs:
           grep -q 'Workflow Studio' /tmp/tayoca-rendered-dom.html
           grep -q 'Website CMS' /tmp/tayoca-rendered-dom.html
           grep -q 'Preferences' /tmp/tayoca-rendered-dom.html
+          grep -q 'Control health' /tmp/tayoca-rendered-dom.html
+          grep -q 'Automation gateway' /tmp/tayoca-rendered-dom.html
+          grep -q 'Canonical CMS' /tmp/tayoca-rendered-dom.html
+          grep -q 'Settings recovery' /tmp/tayoca-rendered-dom.html
           if grep -q 'Configure your n8n URL and API key' /tmp/tayoca-rendered-dom.html; then
             echo "::error::Legacy browser API-key configuration language is visible"
             exit 1
