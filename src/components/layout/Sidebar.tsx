@@ -64,7 +64,7 @@ const navSections: NavSection[] = [
   {
     title: 'Advanced n8n',
     items: [
-      { icon: ListTodo, label: 'Queue', path: '/queue' },
+      { icon: ListTodo, label: 'Active Runs', path: '/queue' },
       { icon: Webhook, label: 'Webhooks', path: '/webhooks' },
       { icon: Archive, label: 'Backups', path: '/backups' },
     ],

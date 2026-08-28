@@ -20,7 +20,7 @@ export const QueueMonitorPage: React.FC = () => {
 
   const refreshOptions = {
     autoRefresh: true,
-    refreshInterval: 5, // Fast refresh for queue monitoring
+    refreshInterval: 5, // Fast refresh for active execution monitoring
   };
 
   const shouldFetchData = !isSupabaseConfigured() || isAuthenticated;
@@ -82,7 +82,7 @@ export const QueueMonitorPage: React.FC = () => {
 
   const handleRefresh = () => {
     refetch();
-    toast.info('Refreshing queue...');
+    toast.info('Refreshing active executions...');
   };
 
   const formatDuration = (seconds: number): string => {
@@ -111,8 +111,8 @@ export const QueueMonitorPage: React.FC = () => {
   return (
     <>
       <PageHeader
-        title="Queue Monitor"
-        description="Monitor running and queued executions in real-time"
+        title="Active Executions"
+        description="Observe executions currently reported by n8n as running or waiting"
         actions={
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
@@ -228,7 +228,7 @@ export const QueueMonitorPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-yellow-500" />
                   <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
-                    Waiting in Queue
+                    Waiting Executions
                   </h3>
                 </div>
                 <span className="text-xs text-neutral-500 dark:text-neutral-400 px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded">
@@ -239,7 +239,7 @@ export const QueueMonitorPage: React.FC = () => {
               {queuedExecutions.waiting.length === 0 ? (
                 <div className="p-8 text-center text-neutral-500 dark:text-neutral-400">
                   <Clock size={32} className="mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">No executions waiting in queue</p>
+                  <p className="text-sm">No executions currently reported as waiting</p>
                 </div>
               ) : (
                 <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -263,7 +263,7 @@ export const QueueMonitorPage: React.FC = () => {
                           Waiting {formatDuration(execution.duration)}
                         </p>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                          Queued {formatDistanceToNow(new Date(execution.startedAt), { addSuffix: true })}
+                          Started {formatDistanceToNow(new Date(execution.startedAt), { addSuffix: true })}
                         </p>
                       </div>
                     </div>
