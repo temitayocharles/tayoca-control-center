@@ -94,7 +94,7 @@ export const QueueMonitorPage: React.FC = () => {
   const StatusIcon = ({ status }: { status: string }) => {
     switch (status) {
       case 'running':
-        return <Loader2 size={16} className="animate-spin text-blue-500" />;
+        return <Loader2 size={16} className="animate-spin text-brand-500" />;
       case 'waiting':
         return <Pause size={16} className="text-yellow-500" />;
       case 'success':
@@ -121,7 +121,7 @@ export const QueueMonitorPage: React.FC = () => {
             </div>
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <RefreshCw size={16} />
               Refresh
@@ -139,17 +139,17 @@ export const QueueMonitorPage: React.FC = () => {
           <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Play size={16} />
                   <span className="text-xs font-medium uppercase">Running</span>
                 </div>
-                <span className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-2xl font-semibold text-brand-600 dark:text-brand-300">
                   {queuedExecutions.running.length}
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Clock size={16} />
                   <span className="text-xs font-medium uppercase">Waiting</span>
@@ -159,14 +159,14 @@ export const QueueMonitorPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400 mb-1">Total Active</div>
                 <span className="text-2xl font-semibold text-neutral-900 dark:text-white">
                   {totalActive}
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400 mb-1">Status</div>
                 <span className={`text-2xl font-semibold ${totalActive > 0 ? 'text-green-600 dark:text-green-400' : 'text-neutral-400'}`}>
                   {totalActive > 0 ? 'Active' : 'Idle'}
@@ -175,10 +175,10 @@ export const QueueMonitorPage: React.FC = () => {
             </div>
 
             {/* Running Executions */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <div className="app-card overflow-hidden">
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Loader2 size={16} className="animate-spin text-blue-500" />
+                  <Loader2 size={16} className="animate-spin text-brand-500" />
                   <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                     Running Executions
                   </h3>
@@ -209,7 +209,7 @@ export const QueueMonitorPage: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                        <p className="text-sm font-medium text-brand-600 dark:text-brand-300">
                           {formatDuration(execution.duration)}
                         </p>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -223,7 +223,7 @@ export const QueueMonitorPage: React.FC = () => {
             </div>
 
             {/* Waiting Executions */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <div className="app-card overflow-hidden">
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-yellow-500" />
@@ -273,7 +273,7 @@ export const QueueMonitorPage: React.FC = () => {
             </div>
 
             {/* Recent Completed */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <div className="app-card overflow-hidden">
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                   Recently Completed

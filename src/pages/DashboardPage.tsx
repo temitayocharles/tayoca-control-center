@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Workflow, Play, CheckCircle, AlertCircle, RefreshCw, FilePenLine, Braces, SlidersHorizontal } from 'lucide-react';
+import { Workflow, Play, CheckCircle, AlertCircle, RefreshCw, FilePenLine, Braces, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 import { PageHeader } from '../components/layout';
 import { StatCard } from '../components/StatCard';
 import { Section } from '../components/Section';
@@ -22,6 +22,27 @@ import type { Execution, Workflow as WorkflowType } from '../types';
 interface DashboardPageProps {
   onShowSettings: () => void;
 }
+
+const quickActionCards = [
+  {
+    label: 'Website CMS',
+    description: 'Pages, media, products and site settings',
+    icon: FilePenLine,
+    path: '/content',
+  },
+  {
+    label: 'Workflow Studio',
+    description: 'Create and manage automations',
+    icon: Braces,
+    path: '/workflow-studio',
+  },
+  {
+    label: 'Preferences',
+    description: 'Refresh, display and notifications',
+    icon: SlidersHorizontal,
+    path: null,
+  },
+];
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) => {
   const navigate = useNavigate();
@@ -153,67 +174,73 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
         title="Dashboard"
         description="Tayoca operations overview across automation and website management"
         actions={
-          <button
-            onClick={handleRefresh}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
-          >
+          <button onClick={handleRefresh} className="app-btn app-btn-secondary">
             <RefreshCw size={16} />
             Refresh
           </button>
         }
       />
 
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <button onClick={() => navigate('/content')} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
-          <FilePenLine size={20} className="text-neutral-500" />
-          <div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Website CMS</div><div className="mt-0.5 text-xs text-neutral-500">Pages, media, products and site settings</div></div>
-        </button>
-        <button onClick={() => navigate('/workflow-studio')} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
-          <Braces size={20} className="text-neutral-500" />
-          <div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Workflow Studio</div><div className="mt-0.5 text-xs text-neutral-500">Create and manage automations</div></div>
-        </button>
-        <button onClick={onShowSettings} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
-          <SlidersHorizontal size={20} className="text-neutral-500" />
-          <div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Preferences</div><div className="mt-0.5 text-xs text-neutral-500">Refresh, display and notifications</div></div>
-        </button>
+      {/* Quick actions */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {quickActionCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <button
+              key={card.label}
+              onClick={() => card.path ? navigate(card.path) : onShowSettings()}
+              className="app-card app-card-hover group flex items-center gap-4 p-4 text-left"
+            >
+              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300 transition-colors group-hover:bg-brand-100 dark:group-hover:bg-brand-500/20">
+                <Icon size={21} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-neutral-900 dark:text-white">{card.label}</span>
+                <span className="mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400">{card.description}</span>
+              </span>
+              <ArrowUpRight size={16} className="flex-shrink-0 text-neutral-300 dark:text-neutral-600 group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors" />
+            </button>
+          );
+        })}
       </div>
 
-      <section className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">Control health</h2>
-            <p className="mt-0.5 text-xs text-neutral-500">Live checks through the guarded server-side control gateway.</p>
-          </div>
+      {/* Control health */}
+      <section className="app-card mb-6 p-5">
+        <div className="mb-4">
+          <h2 className="text-sm font-bold text-neutral-900 dark:text-white">Control health</h2>
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+            Live checks through the guarded server-side control gateway.
+          </p>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800">
-            <div className="text-xs font-medium text-neutral-500">Automation gateway</div>
-            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
+          <div className="app-inset p-4">
+            <div className="app-section-title">Automation gateway</div>
+            <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
               {controlHealth.automation === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.automation === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
               {controlHealth.automation === 'healthy' ? 'Connected' : controlHealth.automation === 'error' ? 'Unavailable' : 'Checking'}
             </div>
           </div>
-          <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800">
-            <div className="text-xs font-medium text-neutral-500">Canonical CMS</div>
-            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
+          <div className="app-inset p-4">
+            <div className="app-section-title">Canonical CMS</div>
+            <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
               {controlHealth.cms === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.cms === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
               {controlHealth.cms === 'healthy' ? 'Site settings readable' : controlHealth.cms === 'error' ? 'Unavailable' : 'Checking'}
             </div>
-            {controlHealth.settingsSha && <div className="mt-1 text-[11px] text-neutral-400">SHA {controlHealth.settingsSha.slice(0, 10)}</div>}
+            {controlHealth.settingsSha && <div className="mt-1.5 text-[11px] font-mono text-neutral-400 dark:text-neutral-500">SHA {controlHealth.settingsSha.slice(0, 10)}</div>}
           </div>
-          <button onClick={() => navigate('/content')} className="rounded-lg border border-neutral-200 p-3 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800">
-            <div className="text-xs font-medium text-neutral-500">Settings recovery</div>
-            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
+          <button onClick={() => navigate('/content')} className="app-inset app-card-hover p-4 text-left">
+            <div className="app-section-title">Settings recovery</div>
+            <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
               {controlHealth.cms === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.cms === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
               {controlHealth.settingsHistory === null ? (controlHealth.cms === 'error' ? 'Unavailable' : 'Checking') : `${controlHealth.settingsHistory} recent revision${controlHealth.settingsHistory === 1 ? '' : 's'}`}
             </div>
-            <div className="mt-1 text-[11px] text-neutral-400">Open Website CMS to review or restore settings.</div>
+            <div className="mt-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">Open Website CMS to review or restore settings.</div>
           </button>
         </div>
       </section>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           label="Workflows"
           value={stats.totalWorkflows}
@@ -249,14 +276,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
       {/* Execution Chart */}
       <div className="mb-8">
         <Section title="Execution History">
-          <ErrorBoundary>
-            <ExecutionChart executions={enrichedExecutions} isLoading={executionsLoading} />
-          </ErrorBoundary>
+          <div className="app-card p-5">
+            <ErrorBoundary>
+              <ExecutionChart executions={enrichedExecutions} isLoading={executionsLoading} />
+            </ErrorBoundary>
+          </div>
         </Section>
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         {/* Workflows - 3/5 */}
         <div className="lg:col-span-3">
           <Section title="Recent Workflows">
@@ -278,7 +307,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
         </div>
 
         {/* Executions - 2/5 */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           <Section title="Recent Executions">
             <ErrorBoundary>
               <ExecutionFeed

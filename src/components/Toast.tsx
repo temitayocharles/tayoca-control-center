@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, AlertCircle, X, Info } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, X, Info } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -28,17 +28,24 @@ interface ToastProps {
 }
 
 const icons = {
-  success: CheckCircle,
+  success: CheckCircle2,
   error: XCircle,
-  warning: AlertCircle,
+  warning: AlertTriangle,
   info: Info,
 };
 
 const styles = {
-  success: 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400',
-  error: 'bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400',
-  warning: 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400',
-  info: 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400',
+  success: 'text-emerald-800 dark:text-emerald-200',
+  error: 'text-red-800 dark:text-red-200',
+  warning: 'text-amber-800 dark:text-amber-200',
+  info: 'text-brand-800 dark:text-brand-200',
+};
+
+const accent = {
+  success: 'bg-emerald-500',
+  error: 'bg-red-500',
+  warning: 'bg-amber-500',
+  info: 'bg-brand-500',
 };
 
 const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
@@ -56,23 +63,27 @@ const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
 
   return (
     <div
-      className={`flex items-start gap-3 p-3 rounded-lg border shadow-lg transition-all duration-200 ${styles[toast.type]} ${
+      className={`relative overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl shadow-neutral-900/10 ring-1 ring-black/[0.02] transition-all duration-200 ${styles[toast.type]} ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
       }`}
     >
-      <Icon size={18} className="flex-shrink-0 mt-0.5" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{toast.title}</p>
-        {toast.message && (
-          <p className="text-xs opacity-80 mt-0.5">{toast.message}</p>
-        )}
+      <span className={`absolute left-0 top-0 h-full w-1 ${accent[toast.type]}`} />
+      <div className="flex items-start gap-3 p-4 pl-5">
+        <Icon size={18} className={`mt-0.5 flex-shrink-0 ${accent[toast.type]} rounded-full p-0.5 text-white`} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold">{toast.title}</p>
+          {toast.message && (
+            <p className="mt-0.5 text-xs opacity-80 leading-relaxed">{toast.message}</p>
+          )}
+        </div>
+        <button
+          onClick={() => onDismiss(toast.id)}
+          className="flex-shrink-0 p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          aria-label="Dismiss"
+        >
+          <X size={14} />
+        </button>
       </div>
-      <button
-        onClick={() => onDismiss(toast.id)}
-        className="flex-shrink-0 p-1 rounded hover:bg-black/5 dark:hover:bg-white/5"
-      >
-        <X size={14} />
-      </button>
     </div>
   );
 };
@@ -86,7 +97,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onDismis
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-20 md:bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+    <div className="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm">
       {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}
@@ -94,7 +105,6 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onDismis
   );
 };
 
-// Toast Provider component
 interface ToastProviderProps {
   children: React.ReactNode;
 }
@@ -134,7 +144,6 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   );
 };
 
-// Hook for using toast context
 export const useToast = (): ToastContextValue => {
   const context = useContext(ToastContext);
   if (!context) {

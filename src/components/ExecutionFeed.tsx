@@ -16,22 +16,10 @@ interface ExecutionFeedProps {
 }
 
 const statusConfig = {
-  success: {
-    dotClass: 'bg-green-500',
-    label: 'Success',
-  },
-  error: {
-    dotClass: 'bg-red-500',
-    label: 'Failed',
-  },
-  running: {
-    dotClass: 'bg-blue-500 animate-pulse',
-    label: 'Running',
-  },
-  waiting: {
-    dotClass: 'bg-amber-500',
-    label: 'Waiting',
-  },
+  success: { dotClass: 'bg-emerald-500', label: 'Success' },
+  error: { dotClass: 'bg-red-500', label: 'Failed' },
+  running: { dotClass: 'bg-brand-500 animate-pulse', label: 'Running' },
+  waiting: { dotClass: 'bg-amber-500', label: 'Waiting' },
 };
 
 const formatDuration = (startedAt: string, stoppedAt: string | null): string => {
@@ -56,7 +44,6 @@ export const ExecutionFeed: React.FC<ExecutionFeedProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [statusFilter]);
@@ -74,11 +61,11 @@ export const ExecutionFeed: React.FC<ExecutionFeedProps> = ({
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 divide-y divide-neutral-200 dark:divide-neutral-800">
+      <div className="app-card divide-y divide-neutral-100 dark:divide-neutral-800">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="px-4 py-2.5 animate-pulse">
+          <div key={i} className="px-5 py-2.5 animate-pulse">
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded bg-neutral-200 dark:bg-neutral-700" />
+              <div className="h-4 w-4 rounded-full bg-neutral-200 dark:bg-neutral-700" />
               <div className="flex-1">
                 <div className="h-3.5 w-28 bg-neutral-200 dark:bg-neutral-700 rounded" />
               </div>
@@ -92,23 +79,27 @@ export const ExecutionFeed: React.FC<ExecutionFeedProps> = ({
 
   if (executions.length === 0) {
     return (
-      <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-8 text-center">
-        <Clock size={24} className="mx-auto mb-2 text-neutral-400" />
+      <div className="app-card px-4 py-10 text-center">
+        <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+          <Clock size={24} className="text-neutral-400 dark:text-neutral-500" />
+        </span>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">No executions yet</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Filter and Export */}
       {showFilter && (
         <div className="flex items-center gap-2">
-          <Filter size={14} className="text-neutral-400" />
+          <span className="flex items-center gap-1.5 text-neutral-400 dark:text-neutral-500">
+            <Filter size={14} />
+          </span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="flex-1 px-2 py-1 text-xs rounded border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
+            className="app-select !py-1.5 !text-xs flex-1"
           >
             <option value="all">All statuses</option>
             <option value="success">Success</option>
@@ -117,14 +108,14 @@ export const ExecutionFeed: React.FC<ExecutionFeedProps> = ({
           </select>
           <button
             onClick={() => exportExecutionsToCSV(filteredExecutions)}
-            className="px-2 py-1 text-xs rounded text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            className="app-btn app-btn-secondary !py-1.5 !px-2.5 !text-xs"
             title="Export to CSV"
           >
             CSV
           </button>
           <button
             onClick={() => exportExecutionsToJSON(filteredExecutions)}
-            className="px-2 py-1 text-xs rounded text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            className="app-btn app-btn-secondary !py-1.5 !px-2.5 !text-xs"
             title="Export to JSON"
           >
             JSON
@@ -132,65 +123,68 @@ export const ExecutionFeed: React.FC<ExecutionFeedProps> = ({
         </div>
       )}
 
-      {/* Empty state for filtered results */}
       {filteredExecutions.length === 0 ? (
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-8 text-center">
-          <Filter size={24} className="mx-auto mb-2 text-neutral-400" />
+        <div className="app-card px-4 py-10 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+            <Filter size={24} className="text-neutral-400 dark:text-neutral-500" />
+          </span>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             No {statusFilter} executions
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
-                <th className="w-6 px-3 py-2"></th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Workflow</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">Duration</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">Time</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              {paginatedExecutions.map((exec) => {
-                const status = statusConfig[exec.status] || statusConfig.waiting;
+        <div className="app-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="app-table">
+              <thead>
+                <tr>
+                  <th className="!px-3 !py-2 w-7"></th>
+                  <th className="!px-3 !py-2">Workflow</th>
+                  <th className="!px-3 !py-2 text-right">Duration</th>
+                  <th className="!px-3 !py-2 text-right">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedExecutions.map((exec) => {
+                  const status = statusConfig[exec.status] || statusConfig.waiting;
 
-                return (
-                  <tr
-                    key={exec.id}
-                    onClick={() => onExecutionClick?.(exec)}
-                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
-                  >
-                    {/* Status */}
-                    <td className="px-3 py-2">
-                      <span className={`w-2 h-2 rounded-full inline-block ${status.dotClass}`} />
-                    </td>
+                  return (
+                    <tr
+                      key={exec.id}
+                      onClick={() => onExecutionClick?.(exec)}
+                      className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+                    >
+                      {/* Status */}
+                      <td className="!px-3 !py-2">
+                        <span className={`h-2 w-2 rounded-full inline-block ${status.dotClass}`} />
+                      </td>
 
-                    {/* Workflow Name */}
-                    <td className="px-3 py-2">
-                      <span className="text-sm text-neutral-900 dark:text-white truncate block max-w-[180px]">
-                        {exec.workflowName || `Workflow ${exec.workflowId}`}
-                      </span>
-                    </td>
+                      {/* Workflow Name */}
+                      <td className="!px-3 !py-2">
+                        <span className="block max-w-[180px] truncate text-sm font-medium text-neutral-900 dark:text-white">
+                          {exec.workflowName || `Workflow ${exec.workflowId}`}
+                        </span>
+                      </td>
 
-                    {/* Duration */}
-                    <td className="px-3 py-2 text-right">
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400 font-mono">
-                        {formatDuration(exec.startedAt, exec.stoppedAt)}
-                      </span>
-                    </td>
+                      {/* Duration */}
+                      <td className="!px-3 !py-2 text-right">
+                        <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                          {formatDuration(exec.startedAt, exec.stoppedAt)}
+                        </span>
+                      </td>
 
-                    {/* Time */}
-                    <td className="px-3 py-2 text-right">
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                        {formatDistanceToNow(exec.startedAt)}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      {/* Time */}
+                      <td className="!px-3 !py-2 text-right">
+                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                          {formatDistanceToNow(exec.startedAt)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -204,14 +198,14 @@ export const ExecutionFeed: React.FC<ExecutionFeedProps> = ({
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-600 dark:text-neutral-400"
+              className="app-icon-btn p-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={14} />
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-600 dark:text-neutral-400"
+              className="app-icon-btn p-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight size={14} />
             </button>

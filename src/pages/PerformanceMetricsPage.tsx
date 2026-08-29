@@ -245,14 +245,14 @@ export const PerformanceMetricsPage: React.FC = () => {
             <button
               onClick={exportToCSV}
               disabled={workflowMetrics.length === 0}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+              className="app-btn app-btn-secondary disabled:opacity-50"
             >
               <Download size={16} />
               Export CSV
             </button>
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <RefreshCw size={16} />
               Refresh
@@ -270,7 +270,7 @@ export const PerformanceMetricsPage: React.FC = () => {
           <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Clock size={16} />
                   <span className="text-xs font-medium uppercase">Avg Duration</span>
@@ -283,7 +283,7 @@ export const PerformanceMetricsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Zap size={16} />
                   <span className="text-xs font-medium uppercase">Total Executions</span>
@@ -293,7 +293,7 @@ export const PerformanceMetricsPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <TrendingUp size={16} />
                   <span className="text-xs font-medium uppercase">Success Rate</span>
@@ -303,7 +303,7 @@ export const PerformanceMetricsPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Clock size={16} />
                   <span className="text-xs font-medium uppercase">Active Workflows</span>
@@ -317,20 +317,20 @@ export const PerformanceMetricsPage: React.FC = () => {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Success Rate Chart */}
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-4">
                   Success Rate (Last 14 Days)
                 </h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={dailyMetrics}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-700)" opacity={0.2} />
                       <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#9CA3AF" />
                       <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} stroke="#9CA3AF" />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'var(--tooltip-bg, #1f2937)',
-                          border: '1px solid #374151',
+                          backgroundColor: 'var(--color-neutral-950)',
+                          border: '1px solid var(--color-neutral-700)',
                           borderRadius: '8px',
                         }}
                         labelStyle={{ color: '#fff' }}
@@ -349,20 +349,20 @@ export const PerformanceMetricsPage: React.FC = () => {
               </div>
 
               {/* Avg Duration Chart */}
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-4">
                   Avg Duration (Last 14 Days)
                 </h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={dailyMetrics}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-700)" opacity={0.2} />
                       <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#9CA3AF" />
                       <YAxis tick={{ fontSize: 12 }} stroke="#9CA3AF" />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'var(--tooltip-bg, #1f2937)',
-                          border: '1px solid #374151',
+                          backgroundColor: 'var(--color-neutral-950)',
+                          border: '1px solid var(--color-neutral-700)',
                           borderRadius: '8px',
                         }}
                         labelStyle={{ color: '#fff' }}
@@ -376,7 +376,7 @@ export const PerformanceMetricsPage: React.FC = () => {
             </div>
 
             {/* Slowest Workflows Table */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <div className="app-card overflow-hidden">
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                   Workflow Performance (Sorted by Avg Duration)

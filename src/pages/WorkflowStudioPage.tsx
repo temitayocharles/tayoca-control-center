@@ -26,5 +26,101 @@ export const WorkflowStudioPage: React.FC = () => {
   const publish=async()=>{if(!selected)return;setBusy(true);try{const w=selected.active?await n8nApi.unpublishWorkflow(selected.id):await n8nApi.publishWorkflow(selected.id);toast.success(w.active?'Workflow published':'Workflow unpublished',w.name);await reload();await select(w);}catch(e){toast.error('Publish action failed',e instanceof Error?e.message:'Unknown error');}finally{setBusy(false);}};
   const run=async()=>{if(!selected)return;try{await n8nApi.triggerWorkflow(selected.id);toast.success('Workflow run requested',selected.name);}catch(e){toast.error('Run failed',e instanceof Error?e.message:'This workflow may require its production trigger instead.');}};
   const remove=async()=>{if(!selected||!window.confirm(`Permanently delete ${selected.name}?`))return;setBusy(true);try{await n8nApi.deleteWorkflow(selected.id);toast.success('Workflow deleted',selected.name);setSelected(null);await reload();}catch(e){toast.error('Delete failed',e instanceof Error?e.message:'Unknown error');}finally{setBusy(false);}};
-  return <><PageHeader title="Workflow Studio" description="Create, edit, verify, publish and operate n8n workflows without exposing an n8n API key" actions={<div className="flex gap-2"><button onClick={createNew} className="px-3 py-1.5 text-sm rounded-lg border"><FilePlus2 size={15} className="inline mr-2"/>New</button><button onClick={()=>reload()} className="px-3 py-1.5 text-sm rounded-lg border"><RefreshCw size={15} className="inline mr-2"/>Refresh</button></div>}/><div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4"><div className="border rounded-lg bg-white dark:bg-neutral-900 dark:border-neutral-800 overflow-hidden"><div className="p-3 border-b dark:border-neutral-800"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search workflows..." className="w-full px-3 py-2 text-sm border rounded-md bg-transparent dark:border-neutral-700"/></div><div className="max-h-[70vh] overflow-auto">{filtered.map(w=><button key={w.id} onClick={()=>select(w)} className={`block w-full text-left px-3 py-2 border-b dark:border-neutral-800 ${selected?.id===w.id?'bg-neutral-100 dark:bg-neutral-800':''}`}><div className="flex items-center justify-between gap-2"><span className="text-sm font-medium truncate">{w.name}</span><span className={`text-[10px] px-1.5 py-0.5 rounded ${w.active?'bg-emerald-100 text-emerald-700':'bg-neutral-100 text-neutral-500'}`}>{w.active?'LIVE':'DRAFT'}</span></div><div className="text-xs text-neutral-500 truncate">{w.id}</div></button>)}</div></div><div className="border rounded-lg bg-white dark:bg-neutral-900 dark:border-neutral-800 p-4 space-y-3"><div className="flex flex-wrap gap-2"><button disabled={busy||(!creating&&!selected)} onClick={save} className="px-3 py-2 text-sm rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 disabled:opacity-50"><Save size={15} className="inline mr-2"/>Save Draft</button>{selected&&<><button disabled={busy} onClick={publish} className="px-3 py-2 text-sm rounded-md border"><Send size={15} className="inline mr-2"/>{selected.active?'Unpublish':'Publish'}</button><button disabled={busy} onClick={run} className="px-3 py-2 text-sm rounded-md border"><Play size={15} className="inline mr-2"/>Run</button><button disabled={busy} onClick={remove} className="px-3 py-2 text-sm rounded-md border text-red-600"><Trash2 size={15} className="inline mr-2"/>Delete</button></>}</div><div className="text-xs text-neutral-500">Save is fail-closed: the control center reads the workflow back from n8n and verifies the persisted definition before reporting success. Publishing is always a separate action.</div><textarea value={editor} onChange={e=>setEditor(e.target.value)} disabled={busy} spellCheck={false} className="w-full min-h-[62vh] p-4 text-xs leading-5 font-mono border rounded-md bg-neutral-950 text-neutral-100 dark:border-neutral-700"/></div></div></>;
+
+  return (
+    <>
+      <PageHeader
+        title="Workflow Studio"
+        description="Create, edit, verify, publish and operate n8n workflows without exposing an n8n API key"
+        actions={
+          <div className="flex gap-2">
+            <button onClick={createNew} className="app-btn app-btn-primary">
+              <FilePlus2 size={15} /> New
+            </button>
+            <button onClick={()=>reload()} className="app-btn app-btn-secondary">
+              <RefreshCw size={15} /> Refresh
+            </button>
+          </div>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[340px_1fr]">
+        {/* Workflow List */}
+        <div className="app-card overflow-hidden">
+          <div className="border-b border-neutral-200 dark:border-neutral-800 p-3">
+            <input
+              value={search}
+              onChange={e=>setSearch(e.target.value)}
+              placeholder="Search workflows..."
+              className="app-input"
+            />
+          </div>
+          <div className="max-h-[70vh] overflow-auto">
+            {filtered.map(w => (
+              <button
+                key={w.id}
+                onClick={()=>select(w)}
+                className={`block w-full border-b border-neutral-100 px-4 py-3 text-left transition-colors dark:border-neutral-800 ${
+                  selected?.id===w.id
+                    ? 'bg-brand-50 dark:bg-brand-500/10 border-l-2 border-l-brand-500'
+                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate text-sm font-semibold text-neutral-900 dark:text-white">{w.name}</span>
+                  <span className={`app-badge ${w.active ? 'app-badge-success' : 'app-badge-neutral'}`}>{w.active ? 'LIVE' : 'DRAFT'}</span>
+                </div>
+                <div className="mt-1 truncate text-xs font-mono text-neutral-400 dark:text-neutral-500">{w.id}</div>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <div className="px-4 py-10 text-center text-sm text-neutral-500 dark:text-neutral-400">
+                No workflows found
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Editor */}
+        <div className="app-card space-y-4 p-5">
+          <div className="flex flex-wrap gap-2">
+            <button
+              disabled={busy||(!creating&&!selected)}
+              onClick={save}
+              className="app-btn app-btn-primary disabled:opacity-50"
+            >
+              <Save size={15} /> Save Draft
+            </button>
+            {selected && (
+              <>
+                <button disabled={busy} onClick={publish} className="app-btn app-btn-secondary disabled:opacity-50">
+                  <Send size={15} /> {selected.active ? 'Unpublish' : 'Publish'}
+                </button>
+                <button disabled={busy} onClick={run} className="app-btn app-btn-secondary disabled:opacity-50">
+                  <Play size={15} /> Run
+                </button>
+                <button disabled={busy} onClick={remove} className="app-btn app-btn-danger disabled:opacity-50">
+                  <Trash2 size={15} /> Delete
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="app-panel p-3.5">
+            <p className="text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+              <span className="font-semibold text-neutral-700 dark:text-neutral-200">Save is fail-closed.</span> The control center reads the workflow back from n8n and verifies the persisted definition before reporting success. Publishing is always a separate action.
+            </p>
+          </div>
+
+          <textarea
+            value={editor}
+            onChange={e=>setEditor(e.target.value)}
+            disabled={busy}
+            spellCheck={false}
+            className="min-h-[62vh] w-full rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-[#24201b] dark:bg-[#14110d] p-4 font-mono text-xs leading-5 text-[#f5efe4] outline-none focus:border-brand-500 dark:focus:border-brand-400"
+          />
+        </div>
+      </div>
+    </>
+  );
 };

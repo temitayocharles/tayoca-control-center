@@ -12,25 +12,25 @@ const statusConfig = {
   success: {
     icon: CheckCircle,
     label: 'Success',
-    color: 'text-emerald-600 dark:text-emerald-500',
+    color: 'text-emerald-600 dark:text-emerald-300',
     bg: 'bg-emerald-50 dark:bg-emerald-500/10',
   },
   error: {
     icon: XCircle,
     label: 'Failed',
-    color: 'text-red-600 dark:text-red-500',
+    color: 'text-red-600 dark:text-red-300',
     bg: 'bg-red-50 dark:bg-red-500/10',
   },
   running: {
     icon: Loader2,
     label: 'Running',
-    color: 'text-blue-600 dark:text-blue-500',
-    bg: 'bg-blue-50 dark:bg-blue-500/10',
+    color: 'text-brand-600 dark:text-brand-300',
+    bg: 'bg-brand-50 dark:bg-brand-500/10',
   },
   waiting: {
     icon: Clock,
     label: 'Waiting',
-    color: 'text-amber-600 dark:text-amber-500',
+    color: 'text-amber-600 dark:text-amber-300',
     bg: 'bg-amber-50 dark:bg-amber-500/10',
   },
 };
@@ -73,21 +73,22 @@ export const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center pt-[5vh] px-4"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-[5vh] px-4"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="app-overlay" />
+      <div className="app-dialog relative w-full max-w-2xl max-h-[90vh] flex flex-col animate-pop-in">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className={`p-1.5 rounded ${status.bg}`}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className={`p-2 rounded-xl flex-shrink-0 ${status.bg}`}>
               <StatusIcon
-                size={16}
+                size={17}
                 className={`${status.color} ${execution.status === 'running' ? 'animate-spin' : ''}`}
               />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate">
                 {execution.workflowName || `Workflow ${execution.workflowId}`}
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -95,68 +96,54 @@ export const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <a
               href={`${getN8nUrl()}/execution/${execution.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+              className="app-icon-btn p-2"
+              aria-label="Open in n8n"
+              title="Open in n8n"
             >
               <ExternalLink size={16} />
             </a>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
-            >
+            <button onClick={onClose} className="app-icon-btn p-2" aria-label="Close">
               <X size={16} />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4 overflow-y-auto flex-1 space-y-4">
+        <div className="p-5 overflow-y-auto flex-1 space-y-5">
           {/* Details Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 block mb-0.5">
-                Execution ID
-              </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="app-inset p-3.5">
+              <span className="app-section-title block mb-1">Execution ID</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-neutral-900 dark:text-white">
-                  {execution.id}
-                </span>
+                <span className="text-sm font-mono text-neutral-900 dark:text-white">{execution.id}</span>
                 <button
                   onClick={() => handleCopy(execution.id.toString(), 'id')}
-                  className="p-1 rounded text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                  className="app-icon-btn p-1.5"
+                  aria-label="Copy execution ID"
                 >
                   {copied === 'id' ? <Check size={12} /> : <Copy size={12} />}
                 </button>
               </div>
             </div>
-            <div>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 block mb-0.5">
-                Workflow ID
-              </span>
-              <span className="text-sm font-mono text-neutral-900 dark:text-white">
-                {execution.workflowId}
-              </span>
+            <div className="app-inset p-3.5">
+              <span className="app-section-title block mb-1">Workflow ID</span>
+              <span className="text-sm font-mono text-neutral-900 dark:text-white">{execution.workflowId}</span>
             </div>
-            <div>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 block mb-0.5">
-                Started
-              </span>
-              <span className="text-sm text-neutral-900 dark:text-white">
+            <div className="app-inset p-3.5">
+              <span className="app-section-title block mb-1">Started</span>
+              <span className="text-sm text-neutral-800 dark:text-neutral-200">
                 {new Date(execution.startedAt).toLocaleString()}
               </span>
             </div>
-            <div>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 block mb-0.5">
-                Finished
-              </span>
-              <span className="text-sm text-neutral-900 dark:text-white">
-                {execution.stoppedAt
-                  ? new Date(execution.stoppedAt).toLocaleString()
-                  : 'Still running...'}
+            <div className="app-inset p-3.5">
+              <span className="app-section-title block mb-1">Finished</span>
+              <span className="text-sm text-neutral-800 dark:text-neutral-200">
+                {execution.stoppedAt ? new Date(execution.stoppedAt).toLocaleString() : 'Still running...'}
               </span>
             </div>
           </div>
@@ -165,24 +152,20 @@ export const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
           {execution.status === 'error' && errorMessage && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
-                  Error
-                </span>
+                <span className="app-section-title">Error</span>
                 <button
                   onClick={() => handleCopy(errorStack || errorMessage, 'error')}
-                  className="flex items-center gap-1 px-2 py-1 rounded text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="app-btn app-btn-ghost !py-1 !px-2.5 !text-xs"
                 >
                   {copied === 'error' ? <Check size={12} /> : <Copy size={12} />}
                   {copied === 'error' ? 'Copied' : 'Copy'}
                 </button>
               </div>
-              <div className="p-3 rounded-md bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
-                <p className="text-sm text-red-700 dark:text-red-400 font-mono break-words">
-                  {errorMessage}
-                </p>
+              <div className="rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-3.5">
+                <p className="text-sm text-red-700 dark:text-red-300 font-mono break-words">{errorMessage}</p>
               </div>
               {errorStack && (
-                <pre className="mt-2 p-3 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-mono text-neutral-600 dark:text-neutral-300 overflow-x-auto whitespace-pre-wrap break-words max-h-48">
+                <pre className="mt-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 p-3.5 text-xs font-mono text-neutral-600 dark:text-neutral-300 overflow-x-auto whitespace-pre-wrap break-words max-h-48">
                   {errorStack}
                 </pre>
               )}
@@ -191,8 +174,8 @@ export const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
 
           {/* Success Message */}
           {execution.status === 'success' && (
-            <div className="p-3 rounded-md bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
-              <p className="text-sm text-emerald-700 dark:text-emerald-400">
+            <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 p-3.5">
+              <p className="text-sm text-emerald-700 dark:text-emerald-300">
                 Execution completed successfully in {formatDuration(execution.startedAt, execution.stoppedAt)}
               </p>
             </div>

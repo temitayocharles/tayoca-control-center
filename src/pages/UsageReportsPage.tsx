@@ -196,14 +196,14 @@ export const UsageReportsPage: React.FC = () => {
         description="Analyze execution patterns and export reports"
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-1">
+            <div className="flex items-center gap-1 app-panel !p-1">
               {(['day', 'week', 'month'] as GroupBy[]).map((option) => (
                 <button
                   key={option}
                   onClick={() => setGroupBy(option)}
                   className={`px-3 py-1 text-xs font-medium rounded transition-colors capitalize ${
                     groupBy === option
-                      ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
+                      ? 'bg-brand-600 text-white dark:bg-brand-500 dark:text-brand-950'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -213,14 +213,14 @@ export const UsageReportsPage: React.FC = () => {
             </div>
             <button
               onClick={exportToCSV}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <Download size={16} />
               Export CSV
             </button>
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <RefreshCw size={16} />
               Refresh
@@ -238,7 +238,7 @@ export const UsageReportsPage: React.FC = () => {
           <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <BarChart3 size={16} />
                   <span className="text-xs font-medium uppercase">Total</span>
@@ -248,21 +248,21 @@ export const UsageReportsPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400 mb-1">Success</div>
                 <span className="text-2xl font-semibold text-green-600 dark:text-green-400">
                   {totalStats.success.toLocaleString()}
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400 mb-1">Errors</div>
                 <span className="text-2xl font-semibold text-red-600 dark:text-red-400">
                   {totalStats.error.toLocaleString()}
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400 mb-1">Running</div>
                 <span className="text-2xl font-semibold text-yellow-600 dark:text-yellow-400">
                   {totalStats.running.toLocaleString()}
@@ -273,7 +273,7 @@ export const UsageReportsPage: React.FC = () => {
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Execution Chart */}
-              <div className="lg:col-span-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="lg:col-span-2 app-card p-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Calendar size={16} className="text-neutral-500" />
                   <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -283,7 +283,7 @@ export const UsageReportsPage: React.FC = () => {
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={usageData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-700)" opacity={0.2} />
                       <XAxis
                         dataKey="label"
                         tick={{ fontSize: 11 }}
@@ -293,8 +293,8 @@ export const UsageReportsPage: React.FC = () => {
                       <YAxis tick={{ fontSize: 12 }} stroke="#9CA3AF" />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'var(--tooltip-bg, #1f2937)',
-                          border: '1px solid #374151',
+                          backgroundColor: 'var(--color-neutral-950)',
+                          border: '1px solid var(--color-neutral-700)',
                           borderRadius: '8px',
                         }}
                         labelStyle={{ color: '#fff' }}
@@ -307,7 +307,7 @@ export const UsageReportsPage: React.FC = () => {
               </div>
 
               {/* Workflow Distribution Pie */}
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-4">
                   Workflow Distribution
                 </h3>
@@ -335,8 +335,8 @@ export const UsageReportsPage: React.FC = () => {
                         </Pie>
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#1f2937',
-                            border: '1px solid #374151',
+                            backgroundColor: 'var(--color-neutral-950)',
+                            border: '1px solid var(--color-neutral-700)',
                             borderRadius: '8px',
                             color: '#fff',
                           }}
@@ -360,7 +360,7 @@ export const UsageReportsPage: React.FC = () => {
             </div>
 
             {/* Most Active Workflows Table */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <div className="app-card overflow-hidden">
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                   Most Active Workflows

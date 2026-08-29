@@ -90,16 +90,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" />
+      <div className="app-overlay" />
 
       {/* Dialog */}
       <div
-        className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl overflow-hidden"
+        className="app-dialog relative w-full max-w-xl animate-pop-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-          <Search size={18} className="text-neutral-400 flex-shrink-0" />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
+          <Search size={18} className="text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -107,23 +107,21 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             onChange={(e) => onQueryChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search commands..."
-            className="flex-1 bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none"
+            className="flex-1 bg-transparent text-[15px] text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700">
-            ESC
-          </kbd>
+          <kbd className="app-kbd hidden sm:inline-flex">ESC</kbd>
         </div>
 
         {/* Command List */}
         <div ref={listRef} className="max-h-80 overflow-y-auto py-2">
           {commands.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+            <div className="px-4 py-10 text-center text-sm text-neutral-500 dark:text-neutral-400">
               No commands found
             </div>
           ) : (
             Object.entries(groupedCommands).map(([category, categoryCommands]) => (
               <div key={category}>
-                <div className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                <div className="px-5 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 dark:text-neutral-500">
                   {categoryLabels[category] || category}
                 </div>
                 {categoryCommands.map((command) => {
@@ -135,14 +133,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       data-index={index}
                       onClick={() => onSelectCommand(command)}
                       onMouseEnter={() => setSelectedIndex(index)}
-                      className={`w-full flex items-center justify-between px-4 py-2 text-left transition-colors ${
+                      className={`w-full flex items-center justify-between gap-4 px-5 py-2.5 text-left transition-colors border-l-2 ${
                         isSelected
-                          ? 'bg-neutral-100 dark:bg-neutral-800'
-                          : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                          ? 'bg-brand-50 dark:bg-brand-500/10 border-brand-500'
+                          : 'border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                       }`}
                     >
                       <div>
-                        <div className="text-sm text-neutral-900 dark:text-white">
+                        <div className="text-sm font-medium text-neutral-900 dark:text-white">
                           {command.label}
                         </div>
                         {command.description && (
@@ -152,7 +150,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         )}
                       </div>
                       {isSelected && (
-                        <CornerDownLeft size={14} className="text-neutral-400 flex-shrink-0" />
+                        <CornerDownLeft size={14} className="text-brand-600 dark:text-brand-300 flex-shrink-0" />
                       )}
                     </button>
                   );
@@ -163,18 +161,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-4 px-4 py-2 border-t border-neutral-200 dark:border-neutral-800 text-[10px] text-neutral-400">
-          <span className="flex items-center gap-1">
-            <ArrowUp size={10} />
-            <ArrowDown size={10} />
+        <div className="flex items-center gap-5 px-5 py-3 border-t border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-400 dark:text-neutral-500">
+          <span className="flex items-center gap-1.5">
+            <ArrowUp size={11} />
+            <ArrowDown size={11} />
             navigate
           </span>
-          <span className="flex items-center gap-1">
-            <CornerDownLeft size={10} />
+          <span className="flex items-center gap-1.5">
+            <CornerDownLeft size={11} />
             select
           </span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[9px]">ESC</kbd>
+          <span className="flex items-center gap-1.5">
+            <kbd className="app-kbd !text-[9px] !px-1.5 !py-0.5">ESC</kbd>
             close
           </span>
         </div>

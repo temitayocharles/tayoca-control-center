@@ -39,7 +39,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
   ];
 
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
+    <div className="app-card overflow-hidden">
       <div className="flex flex-wrap gap-1 border-b border-neutral-200 bg-neutral-50 p-2 dark:border-neutral-700 dark:bg-neutral-800/60">
         {toolbar.map(({ label, icon: Icon, action }) => (
           <button
@@ -59,7 +59,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
         contentEditable={!disabled}
         suppressContentEditableWarning
         onInput={(event) => onChange(event.currentTarget.innerHTML)}
-        className="min-h-[360px] px-5 py-4 text-[15px] leading-7 text-neutral-800 outline-none dark:text-neutral-100 [&_a]:text-blue-600 [&_blockquote]:border-l-4 [&_blockquote]:border-neutral-300 [&_blockquote]:pl-4 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:ml-6 [&_ol]:list-decimal [&_p]:my-3 [&_ul]:list-disc"
+        className="min-h-[360px] px-5 py-4 text-[15px] leading-7 text-neutral-800 outline-none dark:text-neutral-100 [&_a]:text-brand-600 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-neutral-300 [&_blockquote]:pl-4 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:ml-6 [&_ol]:list-decimal [&_p]:my-3 [&_ul]:list-disc"
       />
     </div>
   );

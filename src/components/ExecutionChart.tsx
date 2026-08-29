@@ -50,14 +50,14 @@ export const ExecutionChart: React.FC<ExecutionChartProps> = ({ executions, isLo
     return (
       <div className="space-y-3">
         <div className="flex justify-end">
-          <div className="h-7 w-32 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
+          <div className="h-8 w-36 bg-neutral-200 dark:bg-neutral-700 rounded-xl animate-pulse" />
         </div>
         <div className="h-40 animate-pulse">
           <div className="h-full flex items-end gap-1 px-6">
             {[40, 65, 45, 80, 55, 70, 50].map((h, i) => (
               <div
                 key={i}
-                className="flex-1 bg-neutral-200 dark:bg-neutral-700 rounded-t"
+                className="flex-1 bg-brand-200 dark:bg-brand-900 rounded-t"
                 style={{ height: `${h}%` }}
               />
             ))}
@@ -76,15 +76,15 @@ export const ExecutionChart: React.FC<ExecutionChartProps> = ({ executions, isLo
     <div className="space-y-3">
       {/* Time Range Selector */}
       <div className="flex justify-end">
-        <div className="inline-flex items-center rounded-lg border border-neutral-200 dark:border-neutral-700 p-0.5">
+        <div className="inline-flex items-center gap-0.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800 p-1">
           {timeRangeOptions.map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                 timeRange === range
-                  ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  ? 'bg-white text-brand-700 shadow-sm dark:bg-brand-500 dark:text-brand-950'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
               }`}
             >
               {range}d
@@ -95,52 +95,62 @@ export const ExecutionChart: React.FC<ExecutionChartProps> = ({ executions, isLo
 
       {/* Chart or Empty State */}
       {!hasData ? (
-        <div className="h-40 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
+        <div className="flex h-44 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-sm text-neutral-500 dark:text-neutral-400">
+          <span className="text-2xl">▁▂▄</span>
           No execution data for the past {timeRange} days
         </div>
       ) : (
-        <div className="h-40">
+        <div className="h-44">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="successArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1e8f7d" stopOpacity={0.28} />
+                  <stop offset="100%" stopColor="#1e8f7d" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="errorArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.24} />
+                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 10, fill: '#a3a3a3' }}
+                tick={{ fontSize: 10, fill: '#9a8a74' }}
                 axisLine={false}
                 tickLine={false}
                 interval={timeRange > 14 ? 'preserveStartEnd' : 0}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: '#a3a3a3' }}
+                tick={{ fontSize: 10, fill: '#9a8a74' }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#171717',
-                  border: '1px solid #404040',
-                  borderRadius: '6px',
+                  backgroundColor: 'var(--color-neutral-950)',
+                  border: '1px solid var(--color-neutral-700)',
+                  borderRadius: '12px',
                   fontSize: '12px',
-                  color: '#fafafa',
+                  color: 'var(--color-neutral-50)',
+                  boxShadow: '0 12px 30px -18px rgba(0,0,0,0.5)',
                 }}
-                labelStyle={{ color: '#a3a3a3' }}
+                labelStyle={{ color: 'var(--color-neutral-400)' }}
               />
               <Area
                 type="monotone"
                 dataKey="success"
-                stroke="#10b981"
-                strokeWidth={1.5}
-                fill="#10b981"
-                fillOpacity={0.2}
+                stroke="#1e8f7d"
+                strokeWidth={2}
+                fill="url(#successArea)"
                 name="Success"
               />
               <Area
                 type="monotone"
                 dataKey="error"
                 stroke="#ef4444"
-                strokeWidth={1.5}
-                fill="#ef4444"
-                fillOpacity={0.2}
+                strokeWidth={2}
+                fill="url(#errorArea)"
                 name="Errors"
               />
             </AreaChart>

@@ -21,38 +21,29 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <Keyboard size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-medium text-neutral-900 dark:text-white">
-              Keyboard Shortcuts
-            </h2>
+      <div className="app-overlay" />
+      <div className="app-dialog relative w-full max-w-sm animate-pop-in">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="flex items-center gap-2.5">
+            <span className="app-inset p-2">
+              <Keyboard size={16} className="text-brand-600 dark:text-brand-300" />
+            </span>
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">Keyboard Shortcuts</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
-          >
+          <button onClick={onClose} className="app-icon-btn p-2" aria-label="Close">
             <X size={16} />
           </button>
         </div>
 
-        <div className="p-4">
-          <div className="space-y-2">
+        <div className="p-5">
+          <div className="space-y-1.5 divide-y divide-neutral-100 dark:divide-neutral-800">
             {shortcuts.map(({ key, description }) => (
-              <div
-                key={key}
-                className="flex items-center justify-between py-1.5"
-              >
-                <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {description}
-                </span>
-                <kbd className="px-2 py-1 text-xs font-mono bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded text-neutral-700 dark:text-neutral-300">
-                  {key}
-                </kbd>
+              <div key={key} className="flex items-center justify-between py-2.5">
+                <span className="text-sm text-neutral-600 dark:text-neutral-300">{description}</span>
+                <kbd className="app-kbd">{key}</kbd>
               </div>
             ))}
           </div>
