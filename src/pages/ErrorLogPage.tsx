@@ -192,14 +192,14 @@ export const ErrorLogPage: React.FC = () => {
         description="View and troubleshoot failed executions"
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-1">
+            <div className="flex items-center gap-1 app-panel !p-1">
               {(['1h', '24h', '7d', '30d', 'all'] as TimeFilter[]).map((filter) => (
                 <button
                   key={filter}
                   onClick={() => handleTimeFilterChange(filter)}
                   className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
                     timeFilter === filter
-                      ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
+                      ? 'bg-brand-600 text-white dark:bg-brand-500 dark:text-brand-950'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -209,7 +209,7 @@ export const ErrorLogPage: React.FC = () => {
             </div>
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <RefreshCw size={16} />
               Refresh
@@ -218,8 +218,11 @@ export const ErrorLogPage: React.FC = () => {
         }
       />
 
-      <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
-        Run workflow launches the workflow through its supported production trigger. It does not replay the failed execution or reuse its original payload/state.
+      <div className="app-inset mb-4 flex items-start gap-3 px-4 py-3.5">
+        <AlertCircle size={17} className="mt-0.5 flex-shrink-0 text-brand-600 dark:text-brand-300" />
+        <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
+          Run workflow launches the workflow through its supported production trigger. It does not replay the failed execution or reuse its original payload/state.
+        </p>
       </div>
 
       <ErrorBoundary>
@@ -229,7 +232,7 @@ export const ErrorLogPage: React.FC = () => {
               <RefreshCw size={24} className="animate-spin text-neutral-400" />
             </div>
           ) : filteredErrors.length === 0 ? (
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-8 text-center">
+            <div className="app-card p-8 text-center">
               <AlertCircle size={48} className="mx-auto text-neutral-300 dark:text-neutral-700 mb-4" />
               <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">No errors found</h3>
               <p className="text-neutral-500 dark:text-neutral-400">
@@ -243,7 +246,7 @@ export const ErrorLogPage: React.FC = () => {
                   onClick={selectAllOnPage}
                   className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
                     allOnPageSelected
-                      ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900'
+                      ? 'bg-brand-600 border-brand-600 text-white dark:bg-brand-500 dark:border-brand-500 dark:text-brand-950'
                       : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white'
                   }`}
                   title={allOnPageSelected ? 'Deselect all on page' : 'Select all on page'}
@@ -264,7 +267,7 @@ export const ErrorLogPage: React.FC = () => {
                   <button
                     onClick={handleBulkRun}
                     disabled={isRunning}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-neutral-900 dark:bg-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                    className="app-btn app-btn-primary disabled:opacity-50"
                   >
                     <RotateCcw size={14} className={isRunning ? 'animate-spin' : ''} />
                     {isRunning ? 'Running...' : 'Run selected workflows'}
@@ -285,10 +288,10 @@ export const ErrorLogPage: React.FC = () => {
                 return (
                   <div
                     key={execution.id}
-                    className={`bg-white dark:bg-neutral-900 rounded-lg border overflow-hidden transition-colors ${
+                    className={`app-card overflow-hidden transition-colors ${
                       selectedIds.has(execution.id)
-                        ? 'border-neutral-400 dark:border-neutral-500'
-                        : 'border-neutral-200 dark:border-neutral-800'
+                        ? '!border-brand-500 dark:!border-brand-400'
+                        : ''
                     }`}
                   >
                     <div className="p-4">
@@ -298,7 +301,7 @@ export const ErrorLogPage: React.FC = () => {
                             onClick={() => toggleSelect(execution.id)}
                             className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
                               selectedIds.has(execution.id)
-                                ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900'
+                                ? 'bg-brand-600 border-brand-600 text-white dark:bg-brand-500 dark:border-brand-500 dark:text-brand-950'
                                 : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white'
                             }`}
                           >
@@ -376,7 +379,7 @@ export const ErrorLogPage: React.FC = () => {
                       <select
                         value={itemsPerPage}
                         onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                        className="px-2 py-1 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                        className="app-select !w-auto !py-1"
                       >
                         {ITEMS_PER_PAGE_OPTIONS.map((option) => (
                           <option key={option} value={option}>

@@ -171,13 +171,13 @@ export const SchedulesPage: React.FC = () => {
                   setActivePage(1);
                   setInactivePage(1);
                 }}
-                className="pl-9 pr-3 py-1.5 text-sm w-48 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                className="app-input !pl-9 !py-1.5 w-48"
               />
             </div>
             {schedules.length > 0 && (
               <button
                 onClick={handleExportCSV}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                className="app-btn app-btn-secondary"
                 title="Export to CSV"
               >
                 <Download size={16} />
@@ -186,7 +186,7 @@ export const SchedulesPage: React.FC = () => {
             )}
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <RefreshCw size={16} />
               Refresh
@@ -206,7 +206,7 @@ export const SchedulesPage: React.FC = () => {
             <SkeletonList items={5} />
           </div>
         ) : schedules.length === 0 ? (
-          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-8 text-center">
+          <div className="app-card p-8 text-center">
             <Calendar size={48} className="mx-auto text-neutral-300 dark:text-neutral-700 mb-4" />
             <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">No schedules found</h3>
             <p className="text-neutral-500 dark:text-neutral-400">
@@ -217,7 +217,7 @@ export const SchedulesPage: React.FC = () => {
           <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Calendar size={16} />
                   <span className="text-xs font-medium uppercase">Total Schedules</span>
@@ -227,7 +227,7 @@ export const SchedulesPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Power size={16} />
                   <span className="text-xs font-medium uppercase">Active</span>
@@ -237,7 +237,7 @@ export const SchedulesPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <PowerOff size={16} />
                   <span className="text-xs font-medium uppercase">Inactive</span>
@@ -250,7 +250,7 @@ export const SchedulesPage: React.FC = () => {
 
             {/* Active Schedules */}
             {activeSchedules.length > 0 && (
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+              <div className="app-card overflow-hidden">
                 <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -341,7 +341,7 @@ export const SchedulesPage: React.FC = () => {
 
             {/* Inactive Schedules */}
             {inactiveSchedules.length > 0 && (
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+              <div className="app-card overflow-hidden">
                 <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-neutral-400" />

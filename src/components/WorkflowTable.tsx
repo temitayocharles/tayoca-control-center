@@ -158,9 +158,9 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
       return <ArrowUpDown size={14} className="text-neutral-400" />;
     }
     return sortDirection === 'asc' ? (
-      <ArrowUp size={14} className="text-neutral-900 dark:text-white" />
+      <ArrowUp size={14} className="text-brand-600 dark:text-brand-300" />
     ) : (
-      <ArrowDown size={14} className="text-neutral-900 dark:text-white" />
+      <ArrowDown size={14} className="text-brand-600 dark:text-brand-300" />
     );
   };
 
@@ -228,14 +228,12 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
     return result;
   }, [workflows, search, filterBy, sortColumn, sortDirection, favorites, selectedTag, workflowStatsMap]);
 
-  // Navigate to page with highlighted item and scroll to it
   useEffect(() => {
     if (highlightId && filteredAndSortedWorkflows.length > 0) {
       const index = filteredAndSortedWorkflows.findIndex(w => w.id === highlightId);
       if (index !== -1) {
         const page = Math.floor(index / ITEMS_PER_PAGE) + 1;
         setCurrentPage(page);
-        // Scroll to the row after a short delay
         setTimeout(() => {
           const row = document.querySelector(`[data-workflow-id="${highlightId}"]`);
           row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -284,13 +282,13 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
     return (
       <div className="space-y-3">
         <div className="flex gap-2">
-          <div className="flex-1 h-9 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
-          <div className="w-24 h-9 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
+          <div className="flex-1 h-11 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
+          <div className="w-28 h-11 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
         </div>
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-          <div className="h-10 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800" />
+        <div className="app-card">
+          <div className="h-12 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800" />
           {[1, 2, 3].map((i) => (
-            <div key={i} className="px-4 py-3 animate-pulse border-b border-neutral-200 dark:border-neutral-800 last:border-b-0">
+            <div key={i} className="px-5 py-4 animate-pulse border-b border-neutral-200 dark:border-neutral-800 last:border-b-0">
               <div className="h-4 w-full bg-neutral-200 dark:bg-neutral-700 rounded" />
             </div>
           ))}
@@ -300,13 +298,13 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
           />
           <input
             ref={inputRef}
@@ -314,13 +312,13 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
             placeholder="Search workflows..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent"
+            className="app-input !pl-10"
           />
         </div>
         <select
           value={filterBy}
           onChange={(e) => setFilterBy(e.target.value as FilterOption)}
-          className="px-3 py-2 text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
+          className="app-select sm:w-36"
         >
           <option value="all">All</option>
           <option value="active">Active</option>
@@ -332,15 +330,15 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
       <div className="flex items-center justify-between gap-2">
         {allTags.length > 0 ? (
           <div className="flex items-center gap-2 flex-wrap">
-            <Tag size={14} className="text-neutral-400 flex-shrink-0" />
+            <Tag size={14} className="text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
             {allTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full transition-colors ${
+                className={`app-badge transition-colors ${
                   selectedTag === tag
-                    ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
+                    ? 'app-badge-info'
+                    : 'app-badge-neutral hover:opacity-80'
                 }`}
               >
                 {tag}
@@ -350,7 +348,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
             {selectedTag && (
               <button
                 onClick={() => setSelectedTag(null)}
-                className="text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-white"
               >
                 Clear
               </button>
@@ -359,17 +357,17 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
         ) : (
           <div />
         )}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
             onClick={() => exportWorkflowsToCSV(filteredAndSortedWorkflows)}
-            className="px-2 py-1 text-xs rounded-md text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            className="app-btn app-btn-secondary !py-1.5 !px-2.5 !text-xs"
             title="Export to CSV"
           >
             CSV
           </button>
           <button
             onClick={() => exportWorkflowsToJSON(filteredAndSortedWorkflows)}
-            className="px-2 py-1 text-xs rounded-md text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            className="app-btn app-btn-secondary !py-1.5 !px-2.5 !text-xs"
             title="Export to JSON"
           >
             JSON
@@ -379,25 +377,25 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
 
       {/* Bulk Actions */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 p-2 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+        <div className="app-panel flex flex-wrap items-center gap-2 p-2.5">
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
             {selectedIds.size} selected
           </span>
           <button
             onClick={() => handleBulkAction('activate')}
-            className="px-2 py-1 text-xs rounded bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+            className="app-btn app-btn-secondary !py-1.5 !px-3 !text-xs"
           >
             Activate
           </button>
           <button
             onClick={() => handleBulkAction('deactivate')}
-            className="px-2 py-1 text-xs rounded bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+            className="app-btn app-btn-secondary !py-1.5 !px-3 !text-xs"
           >
             Deactivate
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="ml-auto text-xs text-neutral-600 dark:text-neutral-400 hover:underline"
+            className="ml-auto text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:underline"
           >
             Clear
           </button>
@@ -406,26 +404,28 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
 
       {/* Workflow Table */}
       {filteredAndSortedWorkflows.length === 0 ? (
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-12 text-center">
-          <Workflow size={32} className="mx-auto mb-3 text-neutral-400" />
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <div className="app-card px-4 py-14 text-center">
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+            <Workflow size={26} className="text-neutral-400 dark:text-neutral-500" />
+          </span>
+          <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
             {search ? 'No workflows match your search' : 'No workflows found'}
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
+        <div className="app-card overflow-hidden">
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="app-table">
               <thead>
-                <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="px-3 py-2 text-left w-8">
+                <tr>
+                  <th className="!px-3 !py-3 w-9">
                     <button
                       onClick={toggleSelectAll}
-                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                      className={`h-[18px] w-[18px] rounded-md border flex items-center justify-center transition-colors ${
                         selectedIds.size === paginatedWorkflows.length && paginatedWorkflows.length > 0
-                          ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900'
-                          : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white'
+                          ? 'bg-brand-600 border-brand-600 text-white'
+                          : 'border-neutral-300 dark:border-neutral-600 hover:border-brand-500'
                       }`}
                     >
                       {selectedIds.size === paginatedWorkflows.length && paginatedWorkflows.length > 0 && (
@@ -433,67 +433,41 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       )}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left w-8"></th>
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('name')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Workflow
-                      {getSortIcon('name')}
+                  <th className="!px-3 !py-3 w-9"></th>
+                  <th className="!px-3 !py-3">
+                    <button onClick={() => handleSort('name')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Workflow {getSortIcon('name')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('status')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Status
-                      {getSortIcon('status')}
+                  <th className="!px-3 !py-3">
+                    <button onClick={() => handleSort('status')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Status {getSortIcon('status')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('lastExecution')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Last Execution
-                      {getSortIcon('lastExecution')}
+                  <th className="!px-3 !py-3">
+                    <button onClick={() => handleSort('lastExecution')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Last Execution {getSortIcon('lastExecution')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-right">
-                    <button
-                      onClick={() => handleSort('executions')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white ml-auto"
-                    >
-                      Executions
-                      {getSortIcon('executions')}
+                  <th className="!px-3 !py-3 text-right">
+                    <button onClick={() => handleSort('executions')} className="flex items-center gap-1 ml-auto hover:text-brand-700 dark:hover:text-brand-300">
+                      Executions {getSortIcon('executions')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-right">
-                    <button
-                      onClick={() => handleSort('successRate')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white ml-auto"
-                    >
-                      Success Rate
-                      {getSortIcon('successRate')}
+                  <th className="!px-3 !py-3 text-right">
+                    <button onClick={() => handleSort('successRate')} className="flex items-center gap-1 ml-auto hover:text-brand-700 dark:hover:text-brand-300">
+                      Success Rate {getSortIcon('successRate')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('trigger')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Trigger
-                      {getSortIcon('trigger')}
+                  <th className="!px-3 !py-3">
+                    <button onClick={() => handleSort('trigger')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Trigger {getSortIcon('trigger')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-right">
-                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Actions</span>
-                  </th>
+                  <th className="!px-3 !py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+              <tbody>
                 {paginatedWorkflows.map((workflow) => {
                   const stats = workflowStatsMap.get(workflow.id) || { totalExecutions: 0, successRate: 0, lastExecution: null };
                   const triggerInfo = getTriggerInfo(workflow.nodes);
@@ -506,18 +480,18 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       data-workflow-id={workflow.id}
                       className={`transition-colors ${
                         isHighlighted
-                          ? 'bg-amber-50 dark:bg-amber-500/10 ring-1 ring-amber-200 dark:ring-amber-500/30'
+                          ? 'bg-gold-300/15 dark:bg-gold-500/10 ring-1 ring-gold-400/40'
                           : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                       }`}
                     >
                       {/* Checkbox */}
-                      <td className="px-3 py-3">
+                      <td className="!px-3 !py-3.5">
                         <button
                           onClick={() => toggleSelect(workflow.id)}
-                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                          className={`h-[18px] w-[18px] rounded-md border flex items-center justify-center transition-colors ${
                             selectedIds.has(workflow.id)
-                              ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900'
-                              : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white'
+                              ? 'bg-brand-600 border-brand-600 text-white'
+                              : 'border-neutral-300 dark:border-neutral-600 hover:border-brand-500'
                           }`}
                         >
                           {selectedIds.has(workflow.id) && <Check size={12} />}
@@ -525,13 +499,13 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Favorite */}
-                      <td className="px-3 py-3">
+                      <td className="!px-3 !py-3.5">
                         <button
                           onClick={() => onToggleFavorite(workflow.id)}
                           className={`${
                             favorites.has(workflow.id)
-                              ? 'text-amber-500'
-                              : 'text-neutral-300 dark:text-neutral-600 hover:text-amber-400'
+                              ? 'text-gold-500'
+                              : 'text-neutral-300 dark:text-neutral-600 hover:text-gold-500'
                           }`}
                         >
                           <Star size={14} fill={favorites.has(workflow.id) ? 'currentColor' : 'none'} />
@@ -539,9 +513,9 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Workflow Name */}
-                      <td className="px-3 py-3">
+                      <td className="!px-3 !py-3.5">
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
                             {workflow.name}
                           </p>
                           {workflow.tags && workflow.tags.length > 0 && (
@@ -553,26 +527,20 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Status */}
-                      <td className="px-3 py-3">
-                        <span
-                          className={`inline-flex text-xs px-1.5 py-0.5 rounded ${
-                            workflow.active
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-                              : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
-                          }`}
-                        >
+                      <td className="!px-3 !py-3.5">
+                        <span className={`app-badge ${workflow.active ? 'app-badge-success' : 'app-badge-neutral'}`}>
                           {workflow.active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
 
                       {/* Last Execution */}
-                      <td className="px-3 py-3">
+                      <td className="!px-3 !py-3.5">
                         {stats.lastExecution ? (
                           <div className="flex items-center gap-1.5">
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
+                              className={`h-1.5 w-1.5 rounded-full ${
                                 stats.lastExecution.status === 'success'
-                                  ? 'bg-green-500'
+                                  ? 'bg-emerald-500'
                                   : stats.lastExecution.status === 'error'
                                   ? 'bg-red-500'
                                   : 'bg-amber-500'
@@ -588,35 +556,35 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Executions Count */}
-                      <td className="px-3 py-3 text-right">
-                        <span className="text-sm tabular-nums text-neutral-700 dark:text-neutral-300">
+                      <td className="!px-3 !py-3.5 text-right">
+                        <span className="text-sm font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
                           {stats.totalExecutions}
                         </span>
                       </td>
 
                       {/* Success Rate */}
-                      <td className="px-3 py-3 text-right">
-                        <span className="text-sm tabular-nums text-neutral-700 dark:text-neutral-300">
+                      <td className="!px-3 !py-3.5 text-right">
+                        <span className="text-sm font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
                           {stats.totalExecutions > 0 ? `${stats.successRate.toFixed(0)}%` : '-'}
                         </span>
                       </td>
 
                       {/* Trigger */}
-                      <td className="px-3 py-3">
-                        <span className="inline-flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-400">
+                      <td className="!px-3 !py-3.5">
+                        <span className="inline-flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
                           {triggerInfo.icon}
                           {triggerInfo.label}
                         </span>
                       </td>
 
                       {/* Actions */}
-                      <td className="px-3 py-3">
-                        <div className="flex items-center justify-end gap-0.5">
+                      <td className="!px-3 !py-3.5">
+                        <div className="flex items-center justify-end gap-1">
                           {workflow.active && onTrigger && (
                             <button
                               onClick={() => onTrigger(workflow)}
                               disabled={triggerLoadingId === workflow.id}
-                              className="p-1.5 rounded text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="app-icon-btn p-1.5"
                               title="Run workflow"
                             >
                               {triggerLoadingId === workflow.id ? (
@@ -629,11 +597,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                           <button
                             onClick={() => onToggleActive?.(workflow)}
                             disabled={toggleLoadingId === workflow.id}
-                            className={`p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                              workflow.active
-                                ? 'text-amber-600 dark:text-amber-500'
-                                : 'text-emerald-600 dark:text-emerald-500'
-                            }`}
+                            className={`app-icon-btn p-1.5 ${workflow.active ? 'text-gold-600 dark:text-gold-400' : 'text-emerald-600 dark:text-emerald-400'}`}
                             title={workflow.active ? 'Deactivate' : 'Activate'}
                           >
                             {toggleLoadingId === workflow.id ? (
@@ -648,7 +612,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                             href={`${getN8nUrl()}/workflow/${workflow.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1.5 rounded text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:text-neutral-500 dark:hover:text-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+                            className="app-icon-btn p-1.5"
                             title="Open in n8n"
                           >
                             <ExternalLink size={14} />
@@ -674,14 +638,14 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-600 dark:text-neutral-400"
+              className="app-icon-btn p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-600 dark:text-neutral-400"
+              className="app-icon-btn p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight size={16} />
             </button>

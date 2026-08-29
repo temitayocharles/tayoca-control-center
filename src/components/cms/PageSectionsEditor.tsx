@@ -9,7 +9,7 @@ import {
   type CmsSectionType,
 } from '../../lib/cmsSections';
 
-const inputClass = 'w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-neutral-500 dark:focus:ring-neutral-800';
+const inputClass = 'app-input';
 const labelClass = 'mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-500';
 
 const typeLabel: Record<CmsSectionType, string> = {
@@ -71,7 +71,7 @@ export const PageSectionsEditor: React.FC<{
       </div>
       <div className="flex flex-wrap gap-2">
         {([['content', 'Text'], ['cards', 'Cards'], ['steps', 'Steps'], ['cta', 'CTA']] as Array<[Exclude<CmsSectionType, 'custom'>, string]>).map(([type, label]) =>
-          <button key={type} type="button" disabled={disabled} onClick={() => add(type)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"><Plus size={13} /> {label}</button>
+          <button key={type} type="button" disabled={disabled} onClick={() => add(type)} className="app-btn app-btn-secondary !py-1.5 !text-xs disabled:opacity-40"><Plus size={13} /> {label}</button>
         )}
       </div>
     </div>
@@ -81,7 +81,7 @@ export const PageSectionsEditor: React.FC<{
     <div className="space-y-3">
       {sections.map((section, index) => {
         const open = expanded === section.id;
-        return <article key={section.id} className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        return <article key={section.id} className="overflow-hidden app-card">
           <div className="flex flex-wrap items-center gap-3 px-4 py-3">
             <button type="button" onClick={() => setExpanded(open ? null : section.id)} className="min-w-0 flex-1 text-left">
               <div className="truncate text-sm font-semibold text-neutral-900 dark:text-white">{section.heading || `Untitled ${typeLabel[section.type]}`}</div>

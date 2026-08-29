@@ -83,7 +83,7 @@ const starterDocument = (kind: CmsContentKind, title = 'New Tayoca Page'): strin
   return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>${safeTitle} | Tayoca</title>\n<meta name="description" content="${description}">\n<meta property="og:title" content="${safeTitle} | Tayoca">\n<meta property="og:description" content="${description}">\n<meta property="og:type" content="${isBlog ? 'article' : 'website'}">\n<link rel="icon" href="/favicon.ico">\n<link rel="stylesheet" href="${stylesheet}">\n${isProduct ? '<link rel="stylesheet" href="/assets/css/site-shell.css">' : ''}\n</head>\n<body>\n<a class="skip-link" href="#main">Skip to content</a>\n<header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Tayoca home">TAYOCA</a><nav class="primary-nav" aria-label="Primary navigation"><a href="/services.html">Services</a><a href="/assessments.html">Assessments</a><a href="/results.html">Results</a><a href="/products.html">Products</a><a href="/insights.html">Insights</a><a href="/about.html">About</a></nav></div></header>\n${body}\n<footer><strong>TAYOCA</strong><br>Ontario, Canada.</footer>\n<script defer src="/tayoca-site.js"></script>\n</body>\n</html>\n`;
 };
 
-const inputClass = 'w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-neutral-500 dark:focus:ring-neutral-800';
+const inputClass = 'app-input';
 const labelClass = 'mb-1.5 block text-sm font-medium text-neutral-800 dark:text-neutral-200';
 
 export const ContentPage: React.FC = () => {
@@ -436,11 +436,11 @@ export const ContentPage: React.FC = () => {
     return (
       <div className="space-y-7">
         {creating && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/60 dark:bg-blue-950/30">
-            <div className="mb-3 text-sm font-semibold text-blue-900 dark:text-blue-200">What are you creating?</div>
+          <div className="app-inset p-4">
+            <div className="mb-3 text-sm font-semibold text-neutral-900 dark:text-white">What are you creating?</div>
             <div className="flex flex-wrap gap-2">
               {(['page', 'blog', 'product'] as CmsContentKind[]).map((kind) => (
-                <button key={kind} type="button" onClick={() => changeCreationKind(kind)} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${creationKind === kind ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 dark:bg-neutral-900 dark:text-blue-300'}`}>
+                <button key={kind} type="button" onClick={() => changeCreationKind(kind)} className={`app-btn ${creationKind === kind ? 'app-btn-primary' : 'app-btn-secondary'}`}>
                   {kind === 'page' ? 'Page' : kind === 'blog' ? 'Blog article' : 'Product'}
                 </button>
               ))}
@@ -497,10 +497,10 @@ export const ContentPage: React.FC = () => {
         description="Manage Tayoca pages, sections, articles, products, media and global site settings without editing code"
         actions={(
           <div className="flex gap-2">
-            <button onClick={() => void loadFiles()} disabled={busy} className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
+            <button onClick={() => void loadFiles()} disabled={busy} className="app-btn app-btn-secondary disabled:opacity-50">
               <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> Refresh
             </button>
-            {category !== 'media' && category !== 'settings' && <button onClick={beginCreate} disabled={busy} className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900">
+            {category !== 'media' && category !== 'settings' && <button onClick={beginCreate} disabled={busy} className="app-btn app-btn-primary disabled:opacity-50">
               <Plus size={15} /> New content
             </button>}
           </div>
@@ -510,7 +510,7 @@ export const ContentPage: React.FC = () => {
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
           {categoryConfig.map(({ id, label, description, icon: Icon }) => (
-            <button key={id} onClick={() => setCategory(id)} className={`rounded-xl border p-4 text-left transition ${category === id ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900' : 'border-neutral-200 bg-white hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'}`}>
+            <button key={id} onClick={() => setCategory(id)} className={`app-card app-card-hover p-4 text-left transition ${category === id ? 'border-brand-500 dark:border-brand-400 ring-2 ring-brand-200 dark:ring-brand-500/20' : ''}`}>
               <div className="flex items-center justify-between">
                 <Icon size={18} />
                 <span className="text-xl font-semibold">{counts[id] ?? '—'}</span>
@@ -527,7 +527,7 @@ export const ContentPage: React.FC = () => {
           <GlobalSiteSettingsEditor />
         ) : (
         <div className="grid min-h-[680px] grid-cols-1 gap-4 xl:grid-cols-[340px_1fr]">
-          <aside className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <aside className="app-card overflow-hidden">
             <div className="border-b border-neutral-200 p-3 dark:border-neutral-800">
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -555,14 +555,14 @@ export const ContentPage: React.FC = () => {
             </div>
           </aside>
 
-          <main className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <main className="app-card overflow-hidden">
             {!selected && !creating ? (
               <div className="flex h-full min-h-[620px] items-center justify-center p-8">
                 <div className="max-w-lg text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"><Globe2 size={24} /></div>
                   <h2 className="mt-5 text-xl font-semibold text-neutral-900 dark:text-white">Choose something to manage</h2>
                   <p className="mt-2 text-sm leading-6 text-neutral-500">Select a page, article or product from the left. Edit hero content, reusable page sections, SEO and media in simple controls; technical source details stay out of the way.</p>
-                  <button onClick={beginCreate} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"><Plus size={16} /> Create new content</button>
+                  <button onClick={beginCreate} className="app-btn app-btn-primary mt-5"><Plus size={16} /> Create new content</button>
                 </div>
               </div>
             ) : (
@@ -578,10 +578,10 @@ export const ContentPage: React.FC = () => {
                       {creating && <p className="mt-1 text-xs text-neutral-500">URL: /{path.replace(/^public\//, '')}</p>}
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {liveUrl && !creating && <a href={liveUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium dark:border-neutral-700"><ArrowUpRight size={15} /> Live page</a>}
-                      <button onClick={revert} disabled={!dirty || busy} className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><RotateCcw size={15} /> Revert</button>
-                      {!creating && selected && <button onClick={() => void remove()} disabled={busy} className="flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 disabled:opacity-40 dark:border-red-900/60 dark:text-red-300"><Trash2 size={15} /> Delete</button>}
-                      <button onClick={() => void save()} disabled={!dirty || busy} className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"><Save size={15} /> {busy ? 'Publishing…' : 'Publish changes'}</button>
+                      {liveUrl && !creating && <a href={liveUrl} target="_blank" rel="noreferrer" className="app-btn app-btn-secondary"><ArrowUpRight size={15} /> Live page</a>}
+                      <button onClick={revert} disabled={!dirty || busy} className="app-btn app-btn-secondary disabled:opacity-40"><RotateCcw size={15} /> Revert</button>
+                      {!creating && selected && <button onClick={() => void remove()} disabled={busy} className="app-btn app-btn-danger disabled:opacity-40"><Trash2 size={15} /> Delete</button>}
+                      <button onClick={() => void save()} disabled={!dirty || busy} className="app-btn app-btn-primary disabled:opacity-40"><Save size={15} /> {busy ? 'Publishing…' : 'Publish changes'}</button>
                     </div>
                   </div>
                 </div>
@@ -661,7 +661,7 @@ export const ContentPage: React.FC = () => {
                                 </div>
                                 <div className="flex gap-2">
                                   <button onClick={() => void previewRevision(revision)} disabled={historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-50 dark:border-neutral-700"><Eye size={14} /> Preview</button>
-                                  <button onClick={() => void restoreRevision(revision)} disabled={historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"><RotateCcw size={14} /> Restore</button>
+                                  <button onClick={() => void restoreRevision(revision)} disabled={historyBusy || busy} className="app-btn app-btn-primary disabled:opacity-50"><RotateCcw size={14} /> Restore</button>
                                 </div>
                               </div>
                             </div>
@@ -669,9 +669,9 @@ export const ContentPage: React.FC = () => {
                         </div>
                       )}
                       {revisionPreview && (
-                        <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 dark:border-blue-900/60 dark:bg-blue-950/20">
-                          <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div><div className="text-sm font-semibold text-blue-900 dark:text-blue-200">Previewing {revisionPreview.revision.sha.slice(0, 10)}</div><div className="mt-0.5 text-xs text-blue-700/70 dark:text-blue-300/70">This preview does not change the live page.</div></div><button onClick={() => setRevisionPreview(null)} className="text-sm font-medium text-blue-700 dark:text-blue-300">Close preview</button></div>
-                          {isManagedHtml ? <iframe title="Historical content preview" sandbox="" referrerPolicy="no-referrer" srcDoc={revisionPreview.document.content} className="min-h-[560px] w-full rounded-xl border border-blue-100 bg-white dark:border-blue-900" /> : <pre className="max-h-[560px] overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs dark:bg-neutral-950">{revisionPreview.document.content}</pre>}
+                        <div className="app-inset p-4">
+                          <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div><div className="text-sm font-semibold text-neutral-900 dark:text-white">Previewing {revisionPreview.revision.sha.slice(0, 10)}</div><div className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">This preview does not change the live page.</div></div><button onClick={() => setRevisionPreview(null)} className="text-sm font-medium text-brand-700 dark:text-brand-300">Close preview</button></div>
+                          {isManagedHtml ? <iframe title="Historical content preview" sandbox="" referrerPolicy="no-referrer" srcDoc={revisionPreview.document.content} className="min-h-[560px] w-full rounded-xl border border-neutral-200 bg-white dark:border-neutral-800" /> : <pre className="max-h-[560px] overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs dark:bg-neutral-950">{revisionPreview.document.content}</pre>}
                         </div>
                       )}
                     </div>

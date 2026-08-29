@@ -32,17 +32,17 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="rounded-lg border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-6 text-center">
-          <AlertTriangle size={32} className="mx-auto mb-3 text-red-500" />
-          <h3 className="text-sm font-medium text-red-800 dark:text-red-400 mb-1">
-            Something went wrong
-          </h3>
-          <p className="text-xs text-red-600 dark:text-red-500/80 mb-4 font-mono">
+        <div className="app-card border-red-200 p-6 text-center dark:border-red-500/20">
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-500/10">
+            <AlertTriangle size={28} className="text-red-500" />
+          </span>
+          <h3 className="text-sm font-semibold text-red-800 dark:text-red-300">Something went wrong</h3>
+          <p className="mx-auto mb-4 max-w-md text-xs leading-relaxed text-red-600 dark:text-red-400/80 font-mono">
             {this.state.error?.message || 'Unknown error'}
           </p>
           <button
             onClick={this.handleReset}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/30 transition-colors"
+            className="app-btn app-btn-danger"
           >
             <RefreshCw size={14} />
             Try again

@@ -17,9 +17,16 @@ interface StatCardProps {
   onClick?: () => void;
 }
 
+const iconTints: Record<NonNullable<StatCardProps['color']>, string> = {
+  default: 'text-neutral-500 bg-neutral-100 dark:text-neutral-300 dark:bg-neutral-800',
+  success: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10',
+  error: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-500/10',
+  warning: 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-500/10',
+};
+
 const dotColors = {
-  default: 'bg-neutral-400',
-  success: 'bg-green-500',
+  default: 'bg-neutral-300 dark:bg-neutral-600',
+  success: 'bg-emerald-500',
   error: 'bg-red-500',
   warning: 'bg-amber-500',
 };
@@ -39,7 +46,7 @@ export const StatCard: React.FC<StatCardProps> = ({
     if (!trend || trend.value === 0) return 'text-neutral-400';
     const isPositive = trend.value > 0;
     const isGood = trend.isPositiveGood !== false ? isPositive : !isPositive;
-    return isGood ? 'text-neutral-600 dark:text-neutral-300' : 'text-neutral-500';
+    return isGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500';
   };
 
   const formatTrend = () => {
@@ -48,26 +55,29 @@ export const StatCard: React.FC<StatCardProps> = ({
     return suffix === '%' ? `${prefix}${trend.value.toFixed(1)}%` : `${prefix}${trend.value}`;
   };
 
-  const baseClasses = "p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-left w-full";
-  const interactiveClasses = onClick ? "cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors" : "";
+  const baseClasses = "app-card p-5 text-left w-full";
+  const interactiveClasses = onClick ? "app-card-hover" : "";
 
   const content = (
     <>
-      <div className="flex items-center justify-between mb-3">
-        <Icon size={16} className="text-neutral-400" />
+      <div className="flex items-center justify-between mb-4">
+        <span className={`p-2 rounded-xl ${iconTints[color]}`}>
+          <Icon size={17} />
+        </span>
         {color !== 'default' && (
           <span className={`w-2 h-2 rounded-full ${dotColors[color]}`} />
         )}
       </div>
-      <p className="text-3xl font-semibold text-neutral-900 dark:text-white tabular-nums tracking-tight">
-        {displayValue}{suffix}
+      <p className="text-[1.9rem] leading-none font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+        {displayValue}
+        {suffix && <span className="ml-0.5 text-base font-semibold text-neutral-400 dark:text-neutral-500">{suffix}</span>}
       </p>
-      <div className="flex items-center gap-2 mt-1">
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+      <div className="flex items-center gap-2 mt-2.5">
+        <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
           {label}
         </p>
         {trend && trend.value !== 0 && (
-          <span className={`flex items-center gap-0.5 text-xs ${getTrendColor()}`}>
+          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-semibold ${getTrendColor()}`}>
             {trend.value > 0 ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
             {formatTrend()}
           </span>

@@ -14,7 +14,7 @@ import { getN8nUrl, copyToClipboard, exportToCSV } from '../lib/utils';
 const MethodBadge: React.FC<{ method: string }> = ({ method }) => {
   const colors: Record<string, string> = {
     GET: 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400',
-    POST: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+    POST: 'bg-brand-100 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300',
     PUT: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400',
     PATCH: 'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400',
     DELETE: 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400',
@@ -46,16 +46,16 @@ const WebhookCard: React.FC<{
   };
 
   return (
-    <div className={`bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden ${!webhook.workflowActive ? 'opacity-60' : ''}`}>
+    <div className={`app-card overflow-hidden ${!webhook.workflowActive ? 'opacity-60' : ''}`}>
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0 flex-1">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
               webhook.workflowActive
-                ? 'bg-blue-100 dark:bg-blue-500/10'
+                ? 'bg-brand-100 dark:bg-brand-500/10'
                 : 'bg-neutral-100 dark:bg-neutral-800'
             }`}>
-              <Webhook size={20} className={webhook.workflowActive ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-400'} />
+              <Webhook size={20} className={webhook.workflowActive ? 'text-brand-600 dark:text-brand-300' : 'text-neutral-400'} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
@@ -236,13 +236,13 @@ export const WebhooksPage: React.FC = () => {
                   setActivePage(1);
                   setInactivePage(1);
                 }}
-                className="pl-9 pr-3 py-1.5 text-sm w-48 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                className="app-input !pl-9 !py-1.5 w-48"
               />
             </div>
             {webhooks.length > 0 && (
               <button
                 onClick={handleExportCSV}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                className="app-btn app-btn-secondary"
                 title="Export to CSV"
               >
                 <Download size={16} />
@@ -251,7 +251,7 @@ export const WebhooksPage: React.FC = () => {
             )}
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <RefreshCw size={16} />
               Refresh
@@ -276,7 +276,7 @@ export const WebhooksPage: React.FC = () => {
             </div>
           </div>
         ) : webhooks.length === 0 ? (
-          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-8 text-center">
+          <div className="app-card p-8 text-center">
             <Globe size={48} className="mx-auto text-neutral-300 dark:text-neutral-700 mb-4" />
             <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">No webhooks found</h3>
             <p className="text-neutral-500 dark:text-neutral-400">
@@ -287,7 +287,7 @@ export const WebhooksPage: React.FC = () => {
           <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Webhook size={16} />
                   <span className="text-xs font-medium uppercase">Total Webhooks</span>
@@ -297,7 +297,7 @@ export const WebhooksPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Power size={16} />
                   <span className="text-xs font-medium uppercase">Active</span>
@@ -307,7 +307,7 @@ export const WebhooksPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <PowerOff size={16} />
                   <span className="text-xs font-medium uppercase">Inactive</span>

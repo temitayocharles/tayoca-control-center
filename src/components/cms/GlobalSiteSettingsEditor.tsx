@@ -14,7 +14,7 @@ type SiteSettings = {
 };
 
 const SETTINGS_PATH = 'public/data/site-settings.json';
-const inputClass = 'w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-neutral-500 dark:focus:ring-neutral-800';
+const inputClass = 'app-input';
 const labelClass = 'mb-1.5 block text-sm font-medium text-neutral-800 dark:text-neutral-200';
 
 const parseSettings = (document: ContentDocument): SiteSettings => {
@@ -45,7 +45,7 @@ const LinkListEditor: React.FC<{
     <section className="rounded-xl border border-neutral-200 p-5 dark:border-neutral-800">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div><h3 className="text-base font-semibold text-neutral-900 dark:text-white">{title}</h3><p className="mt-1 text-sm text-neutral-500">{description}</p></div>
-        <button type="button" onClick={() => onChange([...value, { label: 'New link', href: '/', ...(showVisibility ? { visible: true } : {}) }])} disabled={disabled || value.length >= 12} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><Plus size={14} /> Add link</button>
+        <button type="button" onClick={() => onChange([...value, { label: 'New link', href: '/', ...(showVisibility ? { visible: true } : {}) }])} disabled={disabled || value.length >= 12} className="app-btn app-btn-secondary disabled:opacity-40"><Plus size={14} /> Add link</button>
       </div>
       <div className="space-y-3">
         {value.map((item, index) => (
@@ -155,18 +155,18 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
     finally { setBusy(false); }
   };
 
-  if (!settings) return <div className="rounded-xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900"><RefreshCw size={22} className={`mx-auto mb-3 ${busy ? 'animate-spin' : ''}`} /><div className="text-sm text-neutral-500">Loading global site settings…</div><button type="button" onClick={() => void load()} disabled={busy} className="mt-4 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium dark:border-neutral-700">Retry</button></div>;
+  if (!settings) return <div className="app-card p-10 text-center"><RefreshCw size={22} className={`mx-auto mb-3 ${busy ? 'animate-spin' : ''}`} /><div className="text-sm text-neutral-500">Loading global site settings…</div><button type="button" onClick={() => void load()} disabled={busy} className="mt-4 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium dark:border-neutral-700">Retry</button></div>;
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="app-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex gap-3"><div className="rounded-xl bg-neutral-100 p-2.5 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"><Settings2 size={20} /></div><div><h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Global Site Settings</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-neutral-500">Change navigation, the site-wide call to action, footer and contact destinations once. Existing static HTML remains the fallback if this settings file cannot be loaded.</p></div></div>
-          <div className="flex gap-2"><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> Refresh</button><button type="button" onClick={() => { if (!dirty || window.confirm('Discard unsaved global settings?')) void load(true); }} disabled={!dirty || busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><RotateCcw size={14} /> Revert</button><button type="button" onClick={() => void publish()} disabled={!dirty || busy} className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"><Save size={14} /> {busy ? 'Publishing…' : 'Publish settings'}</button></div>
+          <div className="flex gap-2"><button type="button" onClick={() => void load()} disabled={busy} className="app-btn app-btn-secondary disabled:opacity-40"><RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> Refresh</button><button type="button" onClick={() => { if (!dirty || window.confirm('Discard unsaved global settings?')) void load(true); }} disabled={!dirty || busy} className="app-btn app-btn-secondary disabled:opacity-40"><RotateCcw size={14} /> Revert</button><button type="button" onClick={() => void publish()} disabled={!dirty || busy} className="app-btn app-btn-primary disabled:opacity-40"><Save size={14} /> {busy ? 'Publishing…' : 'Publish settings'}</button></div>
         </div>
       </div>
 
-      <section className="grid gap-5 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 md:grid-cols-2">
+      <section className="grid gap-5 app-card p-5 md:grid-cols-2">
         <label><span className={labelClass}>Brand name</span><input value={settings.brand.name} onChange={(e) => setSettings({ ...settings, brand: { ...settings.brand, name: e.target.value } })} disabled={busy} className={inputClass} /></label>
         <label><span className={labelClass}>Brand home link</span><input value={settings.brand.homeHref} onChange={(e) => setSettings({ ...settings, brand: { ...settings.brand, homeHref: e.target.value } })} disabled={busy} className={inputClass} /></label>
         <label><span className={labelClass}>Header button text</span><input value={settings.headerCta.label} onChange={(e) => setSettings({ ...settings, headerCta: { ...settings.headerCta, label: e.target.value } })} disabled={busy} className={inputClass} /></label>
@@ -176,7 +176,7 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
 
       <LinkListEditor title="Primary navigation" description="Reorder, rename, hide or add links in the shared Tayoca navigation." value={settings.navigation} onChange={(navigation) => setSettings({ ...settings, navigation })} showVisibility disabled={busy} />
 
-      <section className="grid gap-5 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 md:grid-cols-2">
+      <section className="grid gap-5 app-card p-5 md:grid-cols-2">
         <div className="md:col-span-2"><h3 className="text-base font-semibold text-neutral-900 dark:text-white">Footer identity</h3><p className="mt-1 text-sm text-neutral-500">The shared footer copy and company location.</p></div>
         <label className="md:col-span-2"><span className={labelClass}>Description</span><textarea rows={3} value={settings.footer.description} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, description: e.target.value } })} disabled={busy} className={inputClass} /></label>
         <label><span className={labelClass}>Location</span><input value={settings.footer.location} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, location: e.target.value } })} disabled={busy} className={inputClass} /></label>
@@ -186,19 +186,19 @@ export const GlobalSiteSettingsEditor: React.FC = () => {
       <LinkListEditor title="Footer — Explore" description="Main site destinations shown in the Explore column." value={settings.footer.explore} onChange={(explore) => setSettings({ ...settings, footer: { ...settings.footer, explore } })} disabled={busy} />
       <LinkListEditor title="Footer — Connect" description="Contact and trust destinations shown in the Connect column." value={settings.footer.connect} onChange={(connect) => setSettings({ ...settings, footer: { ...settings.footer, connect } })} disabled={busy} />
 
-      <section className="grid gap-5 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 md:grid-cols-2">
+      <section className="grid gap-5 app-card p-5 md:grid-cols-2">
         <div className="md:col-span-2"><h3 className="text-base font-semibold text-neutral-900 dark:text-white">Contact destinations</h3><p className="mt-1 text-sm text-neutral-500">Canonical contact values available to the shared site runtime and future CMS-managed calls to action.</p></div>
         <label><span className={labelClass}>Support email</span><input type="email" value={settings.contact.supportEmail} onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, supportEmail: e.target.value } })} disabled={busy} className={inputClass} /></label>
         <label><span className={labelClass}>Booking URL</span><input value={settings.contact.bookingUrl} onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, bookingUrl: e.target.value } })} disabled={busy} className={inputClass} /></label>
         <label className="md:col-span-2"><span className={labelClass}>WhatsApp URL</span><input value={settings.contact.whatsappUrl} onChange={(e) => setSettings({ ...settings, contact: { ...settings.contact, whatsappUrl: e.target.value } })} disabled={busy} className={inputClass} /></label>
       </section>
 
-      <section className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <section className="app-card p-5">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div><h3 className="flex items-center gap-2 text-base font-semibold text-neutral-900 dark:text-white"><History size={17} /> Settings history</h3><p className="mt-1 text-sm text-neutral-500">Every publish is preserved. Restore an earlier configuration without opening Git or the raw data editor.</p></div>
-          <button type="button" onClick={() => void loadHistory()} disabled={historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><RefreshCw size={14} className={historyBusy ? 'animate-spin' : ''} /> Refresh history</button>
+          <button type="button" onClick={() => void loadHistory()} disabled={historyBusy || busy} className="app-btn app-btn-secondary disabled:opacity-40"><RefreshCw size={14} className={historyBusy ? 'animate-spin' : ''} /> Refresh history</button>
         </div>
-        {historyBusy && revisions.length === 0 ? <div className="rounded-xl bg-neutral-50 p-6 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">Loading previous settings…</div> : revisions.length === 0 ? <div className="rounded-xl bg-neutral-50 p-6 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">No settings history is available yet.</div> : <div className="space-y-2">{revisions.map((revision, index) => <div key={revision.sha} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 p-3 dark:border-neutral-800"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="text-sm font-semibold text-neutral-900 dark:text-white">{index === 0 ? 'Current publish' : `Previous version ${index}`}</span><code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">{revision.sha.slice(0, 10)}</code></div><div className="mt-1 truncate text-xs text-neutral-500">{revision.message || 'Settings update'} · {revision.author || 'Tayoca'} · {revision.created ? new Date(revision.created).toLocaleString() : 'Date unavailable'}</div></div><button type="button" onClick={() => void restoreRevision(revision)} disabled={index === 0 || historyBusy || busy} className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"><RotateCcw size={14} /> Restore</button></div>)}</div>}
+        {historyBusy && revisions.length === 0 ? <div className="rounded-xl bg-neutral-50 p-6 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">Loading previous settings…</div> : revisions.length === 0 ? <div className="rounded-xl bg-neutral-50 p-6 text-center text-sm text-neutral-500 dark:bg-neutral-800/60">No settings history is available yet.</div> : <div className="space-y-2">{revisions.map((revision, index) => <div key={revision.sha} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 p-3 dark:border-neutral-800"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="text-sm font-semibold text-neutral-900 dark:text-white">{index === 0 ? 'Current publish' : `Previous version ${index}`}</span><code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">{revision.sha.slice(0, 10)}</code></div><div className="mt-1 truncate text-xs text-neutral-500">{revision.message || 'Settings update'} · {revision.author || 'Tayoca'} · {revision.created ? new Date(revision.created).toLocaleString() : 'Date unavailable'}</div></div><button type="button" onClick={() => void restoreRevision(revision)} disabled={index === 0 || historyBusy || busy} className="app-btn app-btn-secondary disabled:opacity-40"><RotateCcw size={14} /> Restore</button></div>)}</div>}
       </section>
 
       <div className="rounded-xl bg-neutral-50 px-4 py-3 text-xs text-neutral-500 dark:bg-neutral-800/60">Canonical file: <code>{SETTINGS_PATH}</code>{document ? ` · ${document.sha.slice(0, 10)}` : ''}</div>

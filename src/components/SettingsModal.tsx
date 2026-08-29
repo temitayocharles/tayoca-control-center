@@ -15,14 +15,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
   useEffect(() => { setFormData(settings); }, [settings, isOpen]);
   if (!isOpen) return null;
 
-  return <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center pt-[10vh] px-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-    <div className="w-full max-w-md bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b dark:border-neutral-800"><div><h2 className="text-sm font-medium">Quick settings</h2><p className="text-xs text-neutral-500 mt-0.5">Connection credentials are managed server-side.</p></div><button onClick={onClose} className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16}/></button></div>
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between"><label className="flex items-center gap-2 text-sm"><RotateCw size={14}/> Auto-refresh</label><input type="checkbox" checked={formData.autoRefresh} onChange={e => setFormData(prev => ({ ...prev, autoRefresh: e.target.checked }))}/></div>
-        {formData.autoRefresh && <div><label className="flex items-center gap-2 text-sm mb-1.5"><Clock size={14}/> Refresh interval</label><select value={formData.refreshInterval} onChange={e => setFormData(prev => ({ ...prev, refreshInterval: Number(e.target.value) }))} className="w-full px-3 py-2 text-sm rounded-md border bg-transparent dark:border-neutral-700"><option value={10}>10 seconds</option><option value={30}>30 seconds</option><option value={60}>1 minute</option><option value={300}>5 minutes</option></select></div>}
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] px-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="app-overlay" />
+      <div className="app-dialog relative w-full max-w-md animate-pop-in">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
+          <div>
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">Quick settings</h2>
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">Connection credentials are managed server-side.</p>
+          </div>
+          <button onClick={onClose} className="app-icon-btn p-2" aria-label="Close">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-200">
+              <span className="app-inset p-2"><RotateCw size={15} /></span>
+              Auto-refresh
+            </label>
+            <input type="checkbox" checked={formData.autoRefresh} onChange={e => setFormData(prev => ({ ...prev, autoRefresh: e.target.checked }))} className="h-4 w-4 accent-brand-600 dark:accent-brand-400" />
+          </div>
+          {formData.autoRefresh && (
+            <div>
+              <label className="flex items-center gap-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-2">
+                <span className="app-inset p-2"><Clock size={15} /></span>
+                Refresh interval
+              </label>
+              <select value={formData.refreshInterval} onChange={e => setFormData(prev => ({ ...prev, refreshInterval: Number(e.target.value) }))} className="app-select">
+                <option value={10}>10 seconds</option>
+                <option value={30}>30 seconds</option>
+                <option value={60}>1 minute</option>
+                <option value={300}>5 minutes</option>
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between px-5 py-4 border-t border-neutral-200 dark:border-neutral-800">
+          <button onClick={() => { onReset(); onClose(); }} className="app-btn app-btn-danger">Reset</button>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="app-btn app-btn-ghost">Cancel</button>
+            <button onClick={() => { onSave(formData); onClose(); }} className="app-btn app-btn-primary">Save</button>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center justify-between px-4 py-3 border-t dark:border-neutral-800"><button onClick={() => { onReset(); onClose(); }} className="px-3 py-1.5 text-sm text-red-600">Reset</button><div className="flex gap-2"><button onClick={onClose} className="px-3 py-1.5 text-sm">Cancel</button><button onClick={() => { onSave(formData); onClose(); }} className="px-3 py-1.5 text-sm rounded bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">Save</button></div></div>
     </div>
-  </div>;
+  );
 };

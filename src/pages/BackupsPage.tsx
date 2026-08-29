@@ -287,7 +287,7 @@ export const BackupsPage: React.FC = () => {
             <button
               onClick={handleRestoreClick}
               disabled={isRestoring}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               {isRestoring ? <RefreshCw size={16} className="animate-spin" /> : <Upload size={16} />}
               {isRestoring ? 'Restoring…' : 'Restore backup'}
@@ -295,14 +295,14 @@ export const BackupsPage: React.FC = () => {
             <button
               onClick={exportAllWorkflows}
               disabled={isExporting || !workflows?.length}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-neutral-900 dark:bg-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
+              className="app-btn app-btn-primary disabled:opacity-50"
             >
               <Archive size={16} />
               Export All
             </button>
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="app-btn app-btn-secondary"
             >
               <RefreshCw size={16} />
               Refresh
@@ -325,7 +325,7 @@ export const BackupsPage: React.FC = () => {
             <RefreshCw size={24} className="animate-spin text-neutral-400" />
           </div>
         ) : !workflows || workflows.length === 0 ? (
-          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-8 text-center">
+          <div className="app-card p-8 text-center">
             <Archive size={48} className="mx-auto text-neutral-300 dark:text-neutral-700 mb-4" />
             <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">No workflows found</h3>
             <p className="text-neutral-500 dark:text-neutral-400">
@@ -336,7 +336,7 @@ export const BackupsPage: React.FC = () => {
           <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <FileJson size={16} />
                   <span className="text-xs font-medium uppercase">Total Workflows</span>
@@ -346,7 +346,7 @@ export const BackupsPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <div className="app-card p-4">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Check size={16} />
                   <span className="text-xs font-medium uppercase">Selected</span>
@@ -356,7 +356,7 @@ export const BackupsPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 md:col-span-1 col-span-2">
+              <div className="app-card p-4 md:col-span-1 col-span-2">
                 <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 mb-1">
                   <Clock size={16} />
                   <span className="text-xs font-medium uppercase">Last Modified</span>
@@ -373,12 +373,12 @@ export const BackupsPage: React.FC = () => {
             </div>
 
             {/* Info Notice */}
-            <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg p-4">
+            <div className="app-inset p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle size={20} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <AlertCircle size={20} className="text-brand-600 dark:text-brand-300 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Backup Information</h4>
-                  <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                  <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">Backup Information</h4>
+                  <p className="mt-1 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
                     Exports include workflow configuration only; credentials are never included. Restoring a backup creates
                     new unpublished drafts through the guarded Control Center gateway and never overwrites existing workflows.
                   </p>
@@ -395,7 +395,7 @@ export const BackupsPage: React.FC = () => {
                 <button
                   onClick={exportSelectedWorkflows}
                   disabled={isExporting}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-neutral-900 dark:bg-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                  className="app-btn app-btn-primary disabled:opacity-50"
                 >
                   <Download size={14} />
                   Export Selected
@@ -404,7 +404,7 @@ export const BackupsPage: React.FC = () => {
             )}
 
             {/* Workflows Table */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <div className="app-card overflow-hidden">
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                   Workflows
@@ -520,7 +520,7 @@ export const BackupsPage: React.FC = () => {
                             onClick={() => goToPage(pageNum)}
                             className={`w-7 h-7 text-xs rounded transition-colors ${
                               currentPage === pageNum
-                                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
+                                ? 'bg-brand-600 text-white dark:bg-brand-500 dark:text-brand-950'
                                 : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                             }`}
                           >

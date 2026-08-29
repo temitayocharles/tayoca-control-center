@@ -3,41 +3,39 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar, MobileMenuButton } from './Sidebar';
 import { MobileBottomNav } from '../MobileBottomNav';
 import { useIsMobile } from '../../hooks/useMediaQuery';
+import { BrandMark } from '../BrandMark';
 
 export const MainLayout: React.FC = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="app-page min-h-screen">
       {/* Skip to content link for accessibility */}
-      <a
-        href="#main-content"
-        className="skip-to-content"
-      >
+      <a href="#main-content" className="skip-to-content">
         Skip to main content
       </a>
 
       <Sidebar />
 
       {/* Main Content */}
-      <main
-        className={`
-          min-h-screen transition-all duration-200
-          ${isMobile ? 'ml-0' : 'md:ml-60'}
-        `}
-      >
+      <div className={`transition-all duration-200 ${isMobile ? '' : 'md:ml-64'}`}>
         {/* Mobile Header */}
-        <header className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800 md:hidden">
+        <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 bg-white/85 dark:bg-neutral-900/85 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 md:hidden">
           <MobileMenuButton />
-          <span className="text-sm font-semibold text-neutral-900 dark:text-white">n8n Dashboard</span>
-          <div className="w-10" /> {/* Spacer for centering */}
+          <div className="flex items-center gap-2.5">
+            <BrandMark size={26} />
+            <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">
+              Tayoca Control
+            </span>
+          </div>
+          <div className="w-10" />
         </header>
 
         {/* Page Content */}
-        <div id="main-content" className="p-4 pb-20 md:p-6 md:pb-6 lg:p-8 lg:pb-8">
+        <div id="main-content" className="p-4 pb-24 md:p-6 lg:p-8 lg:pb-10">
           <Outlet />
         </div>
-      </main>
+      </div>
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />

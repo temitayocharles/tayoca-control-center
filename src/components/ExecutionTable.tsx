@@ -103,30 +103,15 @@ const getTriggerLabel = (mode: string): string => {
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'success':
-      return {
-        label: 'Success',
-        dotClass: 'bg-green-500',
-      };
+      return { label: 'Success', dotClass: 'bg-emerald-500' };
     case 'error':
-      return {
-        label: 'Error',
-        dotClass: 'bg-red-500',
-      };
+      return { label: 'Error', dotClass: 'bg-red-500' };
     case 'running':
-      return {
-        label: 'Running',
-        dotClass: 'bg-blue-500',
-      };
+      return { label: 'Running', dotClass: 'bg-brand-500' };
     case 'waiting':
-      return {
-        label: 'Waiting',
-        dotClass: 'bg-amber-500',
-      };
+      return { label: 'Waiting', dotClass: 'bg-amber-500' };
     default:
-      return {
-        label: status,
-        dotClass: 'bg-neutral-500',
-      };
+      return { label: status, dotClass: 'bg-neutral-500' };
   }
 };
 
@@ -174,22 +159,20 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
       return <ArrowUpDown size={14} className="text-neutral-400" />;
     }
     return sortDirection === 'asc' ? (
-      <ArrowUp size={14} className="text-neutral-900 dark:text-white" />
+      <ArrowUp size={14} className="text-brand-600 dark:text-brand-300" />
     ) : (
-      <ArrowDown size={14} className="text-neutral-900 dark:text-white" />
+      <ArrowDown size={14} className="text-brand-600 dark:text-brand-300" />
     );
   };
 
   const filteredAndSortedExecutions = useMemo(() => {
     let result = [...executions];
 
-    // Filter by time
     const timeFilterDate = getTimeFilterDate(timeFilter);
     if (timeFilterDate) {
       result = result.filter((e) => isAfter(new Date(e.startedAt), timeFilterDate));
     }
 
-    // Filter by search (workflow name)
     if (search) {
       const searchLower = search.toLowerCase();
       result = result.filter((e) => {
@@ -199,12 +182,10 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
       });
     }
 
-    // Filter by status
     if (filterBy !== 'all') {
       result = result.filter((e) => e.status === filterBy);
     }
 
-    // Sort
     result.sort((a, b) => {
       let comparison = 0;
 
@@ -242,14 +223,12 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
     return result;
   }, [executions, search, filterBy, timeFilter, sortColumn, sortDirection, workflowNameMap]);
 
-  // Navigate to page with highlighted item and scroll to it
   useEffect(() => {
     if (highlightId && filteredAndSortedExecutions.length > 0) {
       const index = filteredAndSortedExecutions.findIndex(e => e.id === highlightId);
       if (index !== -1) {
         const page = Math.floor(index / ITEMS_PER_PAGE) + 1;
         setCurrentPage(page);
-        // Scroll to the row after a short delay
         setTimeout(() => {
           const row = document.querySelector(`[data-execution-id="${highlightId}"]`);
           row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -268,13 +247,13 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
     return (
       <div className="space-y-3">
         <div className="flex gap-2">
-          <div className="flex-1 h-9 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
-          <div className="w-24 h-9 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
+          <div className="flex-1 h-11 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
+          <div className="w-28 h-11 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
         </div>
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-          <div className="h-10 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800" />
+        <div className="app-card">
+          <div className="h-12 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800" />
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="px-4 py-3 animate-pulse border-b border-neutral-200 dark:border-neutral-800 last:border-b-0">
+            <div key={i} className="px-5 py-4 animate-pulse border-b border-neutral-200 dark:border-neutral-800 last:border-b-0">
               <div className="h-4 w-full bg-neutral-200 dark:bg-neutral-700 rounded" />
             </div>
           ))}
@@ -292,67 +271,51 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Quick Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Time Filters */}
         {TIME_FILTERS.map((filter) => (
           <button
             key={filter.value}
             onClick={() => setTimeFilter(filter.value)}
-            className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
+            className={`app-badge transition-colors ${
               timeFilter === filter.value
-                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                ? 'app-badge-info'
+                : 'app-badge-neutral hover:opacity-80'
             }`}
           >
             {filter.label}
           </button>
         ))}
 
-        {/* Divider */}
-        <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+        <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700" />
 
-        {/* Status Filters */}
         <button
           onClick={() => setFilterBy(filterBy === 'success' ? 'all' : 'success')}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
-            filterBy === 'success'
-              ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-          }`}
+          className={`app-badge transition-colors ${filterBy === 'success' ? 'app-badge-success' : 'app-badge-neutral hover:opacity-80'}`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Success
         </button>
         <button
           onClick={() => setFilterBy(filterBy === 'error' ? 'all' : 'error')}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
-            filterBy === 'error'
-              ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-          }`}
+          className={`app-badge transition-colors ${filterBy === 'error' ? 'app-badge-error' : 'app-badge-neutral hover:opacity-80'}`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
           Errors
         </button>
         <button
           onClick={() => setFilterBy(filterBy === 'running' ? 'all' : 'running')}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
-            filterBy === 'running'
-              ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-          }`}
+          className={`app-badge transition-colors ${filterBy === 'running' ? 'app-badge-info' : 'app-badge-neutral hover:opacity-80'}`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
           Running
         </button>
 
-        {/* Clear Filters */}
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
-            className="inline-flex items-center gap-1 px-2 py-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
           >
             <X size={12} />
             Clear
@@ -364,82 +327,62 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
       <div className="relative">
         <Search
           size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
         />
         <input
           type="text"
           placeholder="Search by workflow name or execution ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent"
+          className="app-input !pl-10"
         />
       </div>
 
       {/* Execution Table */}
       {filteredAndSortedExecutions.length === 0 ? (
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-12 text-center">
-          <Activity size={32} className="mx-auto mb-3 text-neutral-400" />
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <div className="app-card px-4 py-14 text-center">
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+            <Activity size={26} className="text-neutral-400 dark:text-neutral-500" />
+          </span>
+          <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
             {search ? 'No executions match your search' : 'No executions found'}
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
+        <div className="app-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="app-table">
               <thead>
-                <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('workflow')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Workflow
-                      {getSortIcon('workflow')}
+                <tr>
+                  <th>
+                    <button onClick={() => handleSort('workflow')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Workflow {getSortIcon('workflow')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('status')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Status
-                      {getSortIcon('status')}
+                  <th>
+                    <button onClick={() => handleSort('status')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Status {getSortIcon('status')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('startTime')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Start Time
-                      {getSortIcon('startTime')}
+                  <th>
+                    <button onClick={() => handleSort('startTime')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Start Time {getSortIcon('startTime')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-right">
-                    <button
-                      onClick={() => handleSort('duration')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white ml-auto"
-                    >
-                      Duration
-                      {getSortIcon('duration')}
+                  <th className="text-right">
+                    <button onClick={() => handleSort('duration')} className="flex items-center gap-1 ml-auto hover:text-brand-700 dark:hover:text-brand-300">
+                      Duration {getSortIcon('duration')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left">
-                    <button
-                      onClick={() => handleSort('trigger')}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      Trigger
-                      {getSortIcon('trigger')}
+                  <th>
+                    <button onClick={() => handleSort('trigger')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
+                      Trigger {getSortIcon('trigger')}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-right">
-                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Actions</span>
-                  </th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+              <tbody>
                 {paginatedExecutions.map((execution) => {
                   const workflowName = execution.workflowName || workflowNameMap.get(execution.workflowId) || `Workflow ${execution.workflowId}`;
                   const statusConfig = getStatusConfig(execution.status);
@@ -451,47 +394,43 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
                       data-execution-id={execution.id}
                       className={`transition-colors cursor-pointer ${
                         isHighlighted
-                          ? 'bg-amber-50 dark:bg-amber-500/10 ring-1 ring-amber-200 dark:ring-amber-500/30'
+                          ? 'bg-gold-300/15 dark:bg-gold-500/10 ring-1 ring-gold-400/40'
                           : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                       }`}
                       onClick={() => onExecutionClick(execution)}
                     >
                       {/* Workflow */}
-                      <td className="px-3 py-3">
-                        <p className="text-sm font-medium text-neutral-900 dark:text-white truncate max-w-xs">
-                          {workflowName}
-                        </p>
+                      <td>
+                        <p className="truncate max-w-xs text-sm font-semibold text-neutral-900 dark:text-white">{workflowName}</p>
                       </td>
 
                       {/* Status */}
-                      <td className="px-3 py-3">
+                      <td>
                         <span className="inline-flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotClass}`} />
+                          <span className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotClass}`} />
                           {statusConfig.label}
                         </span>
                       </td>
 
                       {/* Start Time */}
-                      <td className="px-3 py-3">
-                        <div>
-                          <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                            {format(new Date(execution.startedAt), 'MMM d, HH:mm:ss')}
-                          </p>
-                          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                            {formatDistanceToNow(new Date(execution.startedAt), { addSuffix: true })}
-                          </p>
-                        </div>
+                      <td>
+                        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                          {format(new Date(execution.startedAt), 'MMM d, HH:mm:ss')}
+                        </p>
+                        <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                          {formatDistanceToNow(new Date(execution.startedAt), { addSuffix: true })}
+                        </p>
                       </td>
 
                       {/* Duration */}
-                      <td className="px-3 py-3 text-right">
+                      <td className="text-right">
                         <span className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400">
                           {formatDuration(execution.startedAt, execution.stoppedAt)}
                         </span>
                       </td>
 
                       {/* Trigger */}
-                      <td className="px-3 py-3">
+                      <td>
                         <span className="inline-flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-400">
                           {getTriggerIcon(execution.mode)}
                           {getTriggerLabel(execution.mode)}
@@ -499,20 +438,16 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
                       </td>
 
                       {/* Actions */}
-                      <td className="px-3 py-3">
+                      <td>
                         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => onExecutionClick(execution)}
-                            className="p-1.5 rounded text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                            title="View details"
-                          >
+                          <button onClick={() => onExecutionClick(execution)} className="app-icon-btn p-1.5" title="View details">
                             <Eye size={14} />
                           </button>
                           <a
                             href={`${getN8nUrl()}/workflow/${execution.workflowId}/executions/${execution.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1.5 rounded text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                            className="app-icon-btn p-1.5"
                             title="Open in n8n"
                           >
                             <ExternalLink size={14} />
@@ -538,14 +473,14 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-600 dark:text-neutral-400"
+              className="app-icon-btn p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-600 dark:text-neutral-400"
+              className="app-icon-btn p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight size={16} />
             </button>
