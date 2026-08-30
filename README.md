@@ -21,14 +21,14 @@ The browser never receives an n8n API key, Forgejo token, or gateway token.
 
 ```text
 Browser
-  -> Vercel Authentication
+  -> Cloudflare Access (production)
   -> /api/control (server-side)
   -> Tayoca Control Gateway
      -> n8n loopback API
      -> canonical Forgejo Tayoca repository
 ```
 
-The Vercel deployment is intended to run as an authenticated preview. Production control access is fail-closed unless `ALLOW_PRODUCTION_CONTROL_CENTER=true` is deliberately configured.
+Production control access is fail-closed. `/api/control` enforces the canonical production hostname and validates Cloudflare Access before privileged gateway operations are allowed.
 
 ### Do not configure browser n8n credentials
 
@@ -44,11 +44,16 @@ VITE_N8N_CONSOLE_URL=https://n8n.example.com
 TAYOCA_CONTROL_GATEWAY_URL=https://n8n.example.com/webhook/tayoca-control/v6
 TAYOCA_CONTROL_GATEWAY_TOKEN=<server-only-secret>
 
-# Recommended for the protected preview
-ALLOW_PRODUCTION_CONTROL_CENTER=false
+# Production hardening
+CONTROL_CENTER_CANONICAL_HOST=control.tayoca.com
+CLOUDFLARE_ACCESS_AUD=<cloudflare-access-audience>
+CLOUDFLARE_ACCESS_TEAM_DOMAIN=<team>.cloudflareaccess.com
+ALLOW_PRODUCTION_CONTROL_CENTER=true
 ```
 
 `TAYOCA_CONTROL_GATEWAY_TOKEN` must be stored as a Vercel sensitive environment variable. It must never be prefixed with `VITE_`.
+
+Production must not be enabled unless the canonical-host gate and Cloudflare Access verification are configured and validated.
 
 ## Workflow Studio
 
@@ -93,11 +98,21 @@ Local development still uses `/api/control`; it does not proxy directly to n8n.
 npm run build
 ```
 
-## Deployment
+## Deployment and repository operations
 
-Deploy the desired branch as a Vercel **preview/staging** deployment with Vercel Authentication enabled. Keep the server-side gateway values scoped to preview.
+The Vercel project is Git-linked to this GitHub repository. `main` is the production branch and successful merges to `main` are expected to create production deployments automatically.
 
-Do not enable production control access until a production authentication design is explicitly approved and tested.
+The normal change path is:
+
+1. Create a short-lived feature or fix branch from `main`.
+2. Open a pull request to `main`.
+3. Require the repository CI check **Lint, build, and browser smoke** to pass.
+4. Merge the reviewed change into `main`.
+5. Confirm Vercel created a deployment for the exact merged SHA and promoted `control.tayoca.com` only after the deployment reached `READY`.
+
+Do not bypass the production security model to make deployment verification easier. Cloudflare Access, the canonical-host gate, and the server-side gateway credential boundary must remain intact.
+
+GitHub is configured to delete merged head branches automatically so merged feature branches do not accumulate.
 
 ## Source ownership
 
