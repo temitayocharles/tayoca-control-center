@@ -94,6 +94,8 @@ interface WorkflowTableProps {
   onToggleFavorite: (id: string) => void;
   searchInputRef?: React.RefObject<HTMLInputElement | null>;
   highlightId?: string | null;
+  initialSearch?: string;
+  initialFilter?: FilterOption;
   defaultPageSize?: number;
   tableDensity?: TableDensity;
 }
@@ -114,14 +116,16 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
   onToggleFavorite,
   searchInputRef,
   highlightId,
+  initialSearch = '',
+  initialFilter = 'all',
   defaultPageSize = 10,
   tableDensity = 'normal',
 }) => {
   const pageSize = defaultPageSize > 0 ? defaultPageSize : 10;
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
   const [sortColumn, setSortColumn] = useState<SortColumn>('favorite');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [filterBy, setFilterBy] = useState<FilterOption>('all');
+  const [filterBy, setFilterBy] = useState<FilterOption>(initialFilter);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -143,6 +147,14 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
     });
     return Array.from(tagSet).sort();
   }, [workflows]);
+
+  useEffect(() => {
+    setSearch(initialSearch);
+  }, [initialSearch]);
+
+  useEffect(() => {
+    setFilterBy(initialFilter);
+  }, [initialFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -302,7 +314,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-filter={filterBy}>
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">

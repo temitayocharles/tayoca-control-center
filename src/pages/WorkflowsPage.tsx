@@ -15,6 +15,9 @@ import type { Workflow as WorkflowType } from '../types';
 export const WorkflowsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight');
+  const searchQuery = searchParams.get('search') || '';
+  const statusQuery = searchParams.get('status');
+  const initialFilter = statusQuery === 'active' || statusQuery === 'inactive' ? statusQuery : 'all';
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { isAuthenticated } = useAuth();
   const { settings } = useSettings();
@@ -103,6 +106,8 @@ export const WorkflowsPage: React.FC = () => {
           onToggleFavorite={toggleFavorite}
           searchInputRef={searchInputRef}
           highlightId={highlightId}
+          initialSearch={searchQuery}
+          initialFilter={initialFilter}
           defaultPageSize={settings.defaultPageSize}
           tableDensity={settings.tableDensity}
         />

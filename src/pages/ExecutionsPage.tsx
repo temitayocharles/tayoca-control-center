@@ -15,6 +15,10 @@ import type { Execution } from '../types';
 export const ExecutionsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight');
+  const statusQuery = searchParams.get('status');
+  const initialFilter = statusQuery === 'success' || statusQuery === 'error' || statusQuery === 'running'
+    ? statusQuery
+    : 'all';
   const [selectedExecution, setSelectedExecution] = React.useState<Execution | null>(null);
   const { isAuthenticated } = useAuth();
   const { settings } = useSettings();
@@ -67,6 +71,7 @@ export const ExecutionsPage: React.FC = () => {
           isLoading={isLoading}
           onExecutionClick={handleExecutionClick}
           highlightId={highlightId}
+          initialFilter={initialFilter}
           defaultPageSize={settings.defaultPageSize}
           tableDensity={settings.tableDensity}
         />
