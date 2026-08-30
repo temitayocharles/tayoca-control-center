@@ -18,6 +18,7 @@ import {
 import { format, formatDistanceToNow, differenceInSeconds, subHours, subDays, isAfter } from 'date-fns';
 import type { Execution, Workflow } from '../types';
 import { getN8nUrl } from '../lib/utils';
+import type { TableDensity } from '../hooks/useSettings';
 
 type TimeFilter = 'all' | '1h' | '24h' | '7d' | '30d';
 
@@ -51,6 +52,8 @@ interface ExecutionTableProps {
   isLoading?: boolean;
   onExecutionClick: (execution: Execution) => void;
   highlightId?: string | null;
+  defaultPageSize?: number;
+  tableDensity?: TableDensity;
 }
 
 const formatDuration = (startedAt: string, stoppedAt: string | null): string => {
@@ -119,15 +122,16 @@ type SortColumn = 'workflow' | 'status' | 'startTime' | 'duration' | 'trigger';
 type SortDirection = 'asc' | 'desc';
 type FilterOption = 'all' | 'success' | 'error' | 'running';
 
-const ITEMS_PER_PAGE = 15;
-
 export const ExecutionTable: React.FC<ExecutionTableProps> = ({
   executions,
   workflows,
   isLoading,
   onExecutionClick,
   highlightId,
+  defaultPageSize = 15,
+  tableDensity = 'normal',
 }) => {
+  const pageSize = defaultPageSize > 0 ? defaultPageSize : 15;
   const [search, setSearch] = useState('');
   const [sortColumn, setSortColumn] = useState<SortColumn>('startTime');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -143,7 +147,7 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, filterBy, timeFilter, sortColumn, sortDirection]);
+  }, [search, filterBy, timeFilter, sortColumn, sortDirection, pageSize]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -227,7 +231,7 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
     if (highlightId && filteredAndSortedExecutions.length > 0) {
       const index = filteredAndSortedExecutions.findIndex(e => e.id === highlightId);
       if (index !== -1) {
-        const page = Math.floor(index / ITEMS_PER_PAGE) + 1;
+        const page = Math.floor(index / pageSize) + 1;
         setCurrentPage(page);
         setTimeout(() => {
           const row = document.querySelector(`[data-execution-id="${highlightId}"]`);
@@ -235,12 +239,12 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
         }, 100);
       }
     }
-  }, [highlightId, filteredAndSortedExecutions]);
+  }, [highlightId, filteredAndSortedExecutions, pageSize]);
 
-  const totalPages = Math.ceil(filteredAndSortedExecutions.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredAndSortedExecutions.length / pageSize);
   const paginatedExecutions = filteredAndSortedExecutions.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   if (isLoading) {
@@ -351,7 +355,7 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
       ) : (
         <div className="app-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="app-table">
+            <table className="app-table" data-density={tableDensity}>
               <thead>
                 <tr>
                   <th>
