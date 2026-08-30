@@ -67,6 +67,8 @@ export const ExecutionsPage: React.FC = () => {
           isLoading={isLoading}
           onExecutionClick={handleExecutionClick}
           highlightId={highlightId}
+          defaultPageSize={settings.defaultPageSize}
+          tableDensity={settings.tableDensity}
         />
       </ErrorBoundary>
 

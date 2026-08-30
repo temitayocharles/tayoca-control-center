@@ -26,6 +26,7 @@ import type { Workflow as WorkflowType, Execution, WorkflowNode } from '../types
 import { getN8nUrl } from '../lib/utils';
 import { exportWorkflowsToCSV, exportWorkflowsToJSON } from '../utils/export';
 import { formatDistanceToNow } from 'date-fns';
+import type { TableDensity } from '../hooks/useSettings';
 
 const getTriggerInfo = (nodes: WorkflowNode[]): { type: string; icon: React.ReactNode; label: string } => {
   const triggerNode = nodes.find((n) =>
@@ -93,13 +94,13 @@ interface WorkflowTableProps {
   onToggleFavorite: (id: string) => void;
   searchInputRef?: React.RefObject<HTMLInputElement | null>;
   highlightId?: string | null;
+  defaultPageSize?: number;
+  tableDensity?: TableDensity;
 }
 
 type SortColumn = 'name' | 'status' | 'lastExecution' | 'executions' | 'successRate' | 'trigger' | 'favorite';
 type SortDirection = 'asc' | 'desc';
 type FilterOption = 'all' | 'active' | 'inactive';
-
-const ITEMS_PER_PAGE = 10;
 
 export const WorkflowTable: React.FC<WorkflowTableProps> = ({
   workflows,
@@ -113,7 +114,10 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
   onToggleFavorite,
   searchInputRef,
   highlightId,
+  defaultPageSize = 10,
+  tableDensity = 'normal',
 }) => {
+  const pageSize = defaultPageSize > 0 ? defaultPageSize : 10;
   const [search, setSearch] = useState('');
   const [sortColumn, setSortColumn] = useState<SortColumn>('favorite');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -142,7 +146,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, filterBy, sortColumn, sortDirection, selectedTag]);
+  }, [search, filterBy, sortColumn, sortDirection, selectedTag, pageSize]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -232,7 +236,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
     if (highlightId && filteredAndSortedWorkflows.length > 0) {
       const index = filteredAndSortedWorkflows.findIndex(w => w.id === highlightId);
       if (index !== -1) {
-        const page = Math.floor(index / ITEMS_PER_PAGE) + 1;
+        const page = Math.floor(index / pageSize) + 1;
         setCurrentPage(page);
         setTimeout(() => {
           const row = document.querySelector(`[data-workflow-id="${highlightId}"]`);
@@ -240,12 +244,12 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
         }, 100);
       }
     }
-  }, [highlightId, filteredAndSortedWorkflows]);
+  }, [highlightId, filteredAndSortedWorkflows, pageSize]);
 
-  const totalPages = Math.ceil(filteredAndSortedWorkflows.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredAndSortedWorkflows.length / pageSize);
   const paginatedWorkflows = filteredAndSortedWorkflows.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   const toggleSelectAll = () => {
@@ -416,10 +420,10 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
         <div className="app-card overflow-hidden">
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="app-table">
+            <table className="app-table" data-density={tableDensity}>
               <thead>
                 <tr>
-                  <th className="!px-3 !py-3 w-9">
+                  <th className="w-9">
                     <button
                       onClick={toggleSelectAll}
                       className={`h-[18px] w-[18px] rounded-md border flex items-center justify-center transition-colors ${
@@ -433,38 +437,38 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       )}
                     </button>
                   </th>
-                  <th className="!px-3 !py-3 w-9"></th>
-                  <th className="!px-3 !py-3">
+                  <th className="w-9"></th>
+                  <th>
                     <button onClick={() => handleSort('name')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
                       Workflow {getSortIcon('name')}
                     </button>
                   </th>
-                  <th className="!px-3 !py-3">
+                  <th>
                     <button onClick={() => handleSort('status')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
                       Status {getSortIcon('status')}
                     </button>
                   </th>
-                  <th className="!px-3 !py-3">
+                  <th>
                     <button onClick={() => handleSort('lastExecution')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
                       Last Execution {getSortIcon('lastExecution')}
                     </button>
                   </th>
-                  <th className="!px-3 !py-3 text-right">
+                  <th className="text-right">
                     <button onClick={() => handleSort('executions')} className="flex items-center gap-1 ml-auto hover:text-brand-700 dark:hover:text-brand-300">
                       Executions {getSortIcon('executions')}
                     </button>
                   </th>
-                  <th className="!px-3 !py-3 text-right">
+                  <th className="text-right">
                     <button onClick={() => handleSort('successRate')} className="flex items-center gap-1 ml-auto hover:text-brand-700 dark:hover:text-brand-300">
                       Success Rate {getSortIcon('successRate')}
                     </button>
                   </th>
-                  <th className="!px-3 !py-3">
+                  <th>
                     <button onClick={() => handleSort('trigger')} className="flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300">
                       Trigger {getSortIcon('trigger')}
                     </button>
                   </th>
-                  <th className="!px-3 !py-3 text-right">Actions</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -485,7 +489,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       }`}
                     >
                       {/* Checkbox */}
-                      <td className="!px-3 !py-3.5">
+                      <td className="">
                         <button
                           onClick={() => toggleSelect(workflow.id)}
                           className={`h-[18px] w-[18px] rounded-md border flex items-center justify-center transition-colors ${
@@ -499,7 +503,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Favorite */}
-                      <td className="!px-3 !py-3.5">
+                      <td className="">
                         <button
                           onClick={() => onToggleFavorite(workflow.id)}
                           className={`${
@@ -513,7 +517,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Workflow Name */}
-                      <td className="!px-3 !py-3.5">
+                      <td className="">
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
                             {workflow.name}
@@ -527,14 +531,14 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Status */}
-                      <td className="!px-3 !py-3.5">
+                      <td className="">
                         <span className={`app-badge ${workflow.active ? 'app-badge-success' : 'app-badge-neutral'}`}>
                           {workflow.active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
 
                       {/* Last Execution */}
-                      <td className="!px-3 !py-3.5">
+                      <td className="">
                         {stats.lastExecution ? (
                           <div className="flex items-center gap-1.5">
                             <span
@@ -556,21 +560,21 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Executions Count */}
-                      <td className="!px-3 !py-3.5 text-right">
+                      <td className="text-right">
                         <span className="text-sm font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
                           {stats.totalExecutions}
                         </span>
                       </td>
 
                       {/* Success Rate */}
-                      <td className="!px-3 !py-3.5 text-right">
+                      <td className="text-right">
                         <span className="text-sm font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
                           {stats.totalExecutions > 0 ? `${stats.successRate.toFixed(0)}%` : '-'}
                         </span>
                       </td>
 
                       {/* Trigger */}
-                      <td className="!px-3 !py-3.5">
+                      <td className="">
                         <span className="inline-flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
                           {triggerInfo.icon}
                           {triggerInfo.label}
@@ -578,7 +582,7 @@ export const WorkflowTable: React.FC<WorkflowTableProps> = ({
                       </td>
 
                       {/* Actions */}
-                      <td className="!px-3 !py-3.5">
+                      <td className="">
                         <div className="flex items-center justify-end gap-1">
                           {workflow.active && onTrigger && (
                             <button

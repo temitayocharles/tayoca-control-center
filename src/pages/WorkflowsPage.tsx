@@ -103,6 +103,8 @@ export const WorkflowsPage: React.FC = () => {
           onToggleFavorite={toggleFavorite}
           searchInputRef={searchInputRef}
           highlightId={highlightId}
+          defaultPageSize={settings.defaultPageSize}
+          tableDensity={settings.tableDensity}
         />
       </ErrorBoundary>
     </>
