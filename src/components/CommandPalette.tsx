@@ -15,6 +15,8 @@ const categoryLabels: Record<string, string> = {
   navigation: 'Navigation',
   action: 'Actions',
   workflow: 'Workflows',
+  content: 'Content',
+  theme: 'Theme',
 };
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({

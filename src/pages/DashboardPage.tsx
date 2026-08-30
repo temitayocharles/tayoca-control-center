@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 import { Workflow, Play, CheckCircle, AlertCircle, RefreshCw, FilePenLine, Braces, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 import { PageHeader } from '../components/layout';
 import { StatCard } from '../components/StatCard';
@@ -56,7 +57,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
     cms: 'checking' | 'healthy' | 'error';
     settingsHistory: number | null;
     settingsSha: string | null;
-  }>({ automation: 'checking', cms: 'checking', settingsHistory: null, settingsSha: null });
+    lastChecked: number | null;
+  }>({ automation: 'checking', cms: 'checking', settingsHistory: null, settingsSha: null, lastChecked: null });
 
   const refreshOptions = {
     autoRefresh: settings.autoRefresh,
@@ -80,7 +82,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
   useExecutionNotifications(executions);
 
   const checkControlHealth = React.useCallback(async () => {
-    setControlHealth(prev => ({ ...prev, automation: 'checking', cms: 'checking' }));
+    setControlHealth(prev => ({ ...prev, lastChecked: Date.now() }));
     const [automationResult, cmsResult] = await Promise.allSettled([
       n8nApi.testConnection(),
       Promise.all([
@@ -97,6 +99,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
         cms: 'healthy',
         settingsHistory: revisions.length,
         settingsSha: settingsDocument.sha,
+        lastChecked: Date.now(),
       });
       return;
     }
@@ -106,12 +109,32 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
       cms: 'error',
       settingsHistory: null,
       settingsSha: null,
+      lastChecked: Date.now(),
     });
   }, []);
 
   React.useEffect(() => {
     if (shouldFetchData) void checkControlHealth();
   }, [shouldFetchData, checkControlHealth]);
+
+  // Auto re-check the control plane on a fixed interval (independent of manual refresh)
+  React.useEffect(() => {
+    if (!shouldFetchData) return;
+    const id = window.setInterval(() => { void checkControlHealth(); }, 30000);
+    return () => window.clearInterval(id);
+  }, [shouldFetchData, checkControlHealth]);
+
+  const renderStatusPill = (status: 'checking' | 'healthy' | 'error', healthyLabel: string, errorLabel: string) => {
+    const cls = status === 'healthy' ? 'app-badge-success' : status === 'error' ? 'app-badge-error' : 'app-badge-info';
+    const icon = status === 'healthy' ? <CheckCircle size={12} /> : status === 'error' ? <AlertCircle size={12} /> : <RefreshCw size={12} className="animate-spin" />;
+    const label = status === 'healthy' ? healthyLabel : status === 'error' ? errorLabel : 'Checking';
+    return (
+      <span className={`app-badge ${cls}`}>
+        {icon}
+        {label}
+      </span>
+    );
+  };
 
   const handleRefresh = () => {
     refetchWorkflows();
@@ -206,33 +229,38 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onShowSettings }) 
 
       {/* Control health */}
       <section className="app-card mb-6 p-5">
-        <div className="mb-4">
-          <h2 className="text-sm font-bold text-neutral-900 dark:text-white">Control health</h2>
-          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-            Live checks through the guarded server-side control gateway.
-          </p>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">Control health</h2>
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              Live checks through the guarded server-side control gateway.
+            </p>
+          </div>
+          {controlHealth.lastChecked && (
+            <span className="flex flex-shrink-0 items-center gap-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">
+              <RefreshCw size={12} className="animate-spin" />
+              Last checked {formatDistanceToNow(new Date(controlHealth.lastChecked), { addSuffix: true })}
+            </span>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="app-inset p-4">
             <div className="app-section-title">Automation gateway</div>
-            <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
-              {controlHealth.automation === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.automation === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
-              {controlHealth.automation === 'healthy' ? 'Connected' : controlHealth.automation === 'error' ? 'Unavailable' : 'Checking'}
-            </div>
+            <div className="mt-2">{renderStatusPill(controlHealth.automation, 'Connected', 'Unavailable')}</div>
           </div>
           <div className="app-inset p-4">
             <div className="app-section-title">Canonical CMS</div>
-            <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
-              {controlHealth.cms === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.cms === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
-              {controlHealth.cms === 'healthy' ? 'Site settings readable' : controlHealth.cms === 'error' ? 'Unavailable' : 'Checking'}
-            </div>
+            <div className="mt-2">{renderStatusPill(controlHealth.cms, 'Site settings readable', 'Unavailable')}</div>
             {controlHealth.settingsSha && <div className="mt-1.5 text-[11px] font-mono text-neutral-400 dark:text-neutral-500">SHA {controlHealth.settingsSha.slice(0, 10)}</div>}
           </div>
           <button onClick={() => navigate('/content')} className="app-inset app-card-hover p-4 text-left">
             <div className="app-section-title">Settings recovery</div>
-            <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
-              {controlHealth.cms === 'healthy' ? <CheckCircle size={16} className="text-emerald-500" /> : controlHealth.cms === 'error' ? <AlertCircle size={16} className="text-red-500" /> : <RefreshCw size={16} className="animate-spin text-neutral-400" />}
-              {controlHealth.settingsHistory === null ? (controlHealth.cms === 'error' ? 'Unavailable' : 'Checking') : `${controlHealth.settingsHistory} recent revision${controlHealth.settingsHistory === 1 ? '' : 's'}`}
+            <div className="mt-2">
+              {renderStatusPill(
+                controlHealth.cms,
+                controlHealth.settingsHistory === null ? 'No history' : `${controlHealth.settingsHistory} revision${controlHealth.settingsHistory === 1 ? '' : 's'}`,
+                'Unavailable'
+              )}
             </div>
             <div className="mt-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">Open Website CMS to review or restore settings.</div>
           </button>

@@ -5,21 +5,24 @@ export interface Command {
   id: string;
   label: string;
   description?: string;
-  category: 'navigation' | 'action' | 'workflow';
+  category: 'navigation' | 'action' | 'workflow' | 'content' | 'theme';
   keywords?: string[];
   action: () => void;
 }
 
 interface UseCommandPaletteOptions {
   workflows?: Array<{ id: string; name: string }>;
+  content?: Array<{ path: string; name: string; kind?: string }>;
   onRefresh?: () => void;
+  onToggleTheme?: () => void;
+  isDarkMode?: boolean;
 }
 
 export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
-  const { workflows, onRefresh } = options;
+  const { workflows, content, onRefresh, onToggleTheme, isDarkMode } = options;
 
   const open = useCallback(() => {
     setIsOpen(true);
@@ -147,9 +150,38 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
     }));
   }, [workflows, navigate, close]);
 
+  const contentCommands: Command[] = useMemo(() => {
+    if (!content) return [];
+    return content.map((entry) => ({
+      id: `content-${entry.path}`,
+      label: entry.name,
+      description: entry.path,
+      category: 'content' as const,
+      keywords: ['cms', 'content', 'page', 'blog', 'product', 'media', 'site', entry.kind || ''],
+      action: () => {
+        navigate(`/content?path=${encodeURIComponent(entry.path)}`);
+        close();
+      },
+    }));
+  }, [content, navigate, close]);
+
+  const themeCommands: Command[] = useMemo(() => [
+    {
+      id: 'action-toggle-theme',
+      label: isDarkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+      description: isDarkMode ? 'Use the light color scheme' : 'Use the dark color scheme',
+      category: 'theme' as const,
+      keywords: ['dark', 'light', 'theme', 'appearance', 'mode'],
+      action: () => {
+        onToggleTheme?.();
+        close();
+      },
+    },
+  ], [isDarkMode, onToggleTheme, close]);
+
   const allCommands = useMemo(
-    () => [...navigationCommands, ...actionCommands, ...workflowCommands],
-    [navigationCommands, actionCommands, workflowCommands]
+    () => [...navigationCommands, ...actionCommands, ...workflowCommands, ...contentCommands, ...themeCommands],
+    [navigationCommands, actionCommands, workflowCommands, contentCommands, themeCommands]
   );
 
   const filteredCommands = useMemo(() => {
