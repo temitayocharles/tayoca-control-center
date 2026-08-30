@@ -208,6 +208,40 @@ jobs:
             exit 1
           fi
 
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            'http://127.0.0.1:4173/workflows?search=qa-sentinel' > /tmp/tayoca-workflow-search-dom.html
+
+          grep -q 'placeholder="Search workflows..."' /tmp/tayoca-workflow-search-dom.html
+          grep -q 'value="qa-sentinel"' /tmp/tayoca-workflow-search-dom.html
+
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            'http://127.0.0.1:4173/workflows?status=active' > /tmp/tayoca-workflow-filter-dom.html
+
+          grep -q 'data-filter="active"' /tmp/tayoca-workflow-filter-dom.html
+
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=8000 \
+            --dump-dom \
+            'http://127.0.0.1:4173/executions?status=error' > /tmp/tayoca-execution-filter-dom.html
+
+          grep -q 'data-filter="error"' /tmp/tayoca-execution-filter-dom.html
+
           if grep -q '<div id="root"></div>' /tmp/tayoca-rendered-dom.html; then
             echo "::error::React did not mount into #root"
             exit 1

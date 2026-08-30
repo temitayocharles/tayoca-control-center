@@ -52,6 +52,7 @@ interface ExecutionTableProps {
   isLoading?: boolean;
   onExecutionClick: (execution: Execution) => void;
   highlightId?: string | null;
+  initialFilter?: FilterOption;
   defaultPageSize?: number;
   tableDensity?: TableDensity;
 }
@@ -128,6 +129,7 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
   isLoading,
   onExecutionClick,
   highlightId,
+  initialFilter = 'all',
   defaultPageSize = 15,
   tableDensity = 'normal',
 }) => {
@@ -135,7 +137,7 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
   const [search, setSearch] = useState('');
   const [sortColumn, setSortColumn] = useState<SortColumn>('startTime');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [filterBy, setFilterBy] = useState<FilterOption>('all');
+  const [filterBy, setFilterBy] = useState<FilterOption>(initialFilter);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -144,6 +146,10 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
     workflows.forEach((w) => map.set(w.id, w.name));
     return map;
   }, [workflows]);
+
+  useEffect(() => {
+    setFilterBy(initialFilter);
+  }, [initialFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -275,7 +281,7 @@ export const ExecutionTable: React.FC<ExecutionTableProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-filter={filterBy}>
       {/* Quick Filters */}
       <div className="flex flex-wrap items-center gap-2">
         {TIME_FILTERS.map((filter) => (
