@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   ArrowUpRight,
   BookOpen,
@@ -80,7 +81,7 @@ const starterDocument = (kind: CmsContentKind, title = 'New Tayoca Page'): strin
       ? `<main id="main"><section class="hero"><div><p class="eyebrow">Tayoca product</p><h1>${safeTitle}</h1><p class="lede">Describe what this product helps the customer achieve.</p><div class="price">$29</div><div class="cta-row"><a class="btn" href="https://tayoca.gumroad.com/" target="_blank" rel="noopener noreferrer" data-event="product_purchase_click">Buy securely</a></div></div><div class="cover-frame"><img class="cover" src="/assets/og-image.png" alt="${safeTitle}"></div></section></main>`
       : `<main id="main"><section class="hero"><div class="hero-inner"><p class="eyebrow">Tayoca</p><h1>${safeTitle}</h1><p class="lede">Add a clear introduction for this page.</p></div></section><section class="section"><div class="container"><h2>Page content</h2><p>Add the information visitors need here.</p></div></section></main>`;
 
-  return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>${safeTitle} | Tayoca</title>\n<meta name="description" content="${description}">\n<meta property="og:title" content="${safeTitle} | Tayoca">\n<meta property="og:description" content="${description}">\n<meta property="og:type" content="${isBlog ? 'article' : 'website'}">\n<link rel="icon" href="/favicon.ico">\n<link rel="stylesheet" href="${stylesheet}">\n${isProduct ? '<link rel="stylesheet" href="/assets/css/site-shell.css">' : ''}\n</head>\n<body>\n<a class="skip-link" href="#main">Skip to content</a>\n<header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Tayoca home">TAYOCA</a><nav class="primary-nav" aria-label="Primary navigation"><a href="/services.html">Services</a><a href="/assessments.html">Assessments</a><a href="/results.html">Results</a><a href="/products.html">Products</a><a href="/insights.html">Insights</a><a href="/about.html">About</a></nav></div></header>\n${body}\n<footer><strong>TAYOCA</strong><br>Ontario, Canada.</footer>\n<script defer src="/tayoca-site.js"></script>\n</body>\n</html>\n`;
+  return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>${safeTitle} | Tayoca</title>\n<meta name="description" content="${description}">\n<meta property="og:title" content="${safeTitle} | Tayoca">\n<meta property="og:description" content="${description}">\n<meta property="og:type" content="${isBlog ? 'article' : 'website'}">\n<link rel="icon" href="/favicon.svg">\n<link rel="stylesheet" href="${stylesheet}">\n${isProduct ? '<link rel="stylesheet" href="/assets/css/site-shell.css">' : ''}\n</head>\n<body>\n<a class="skip-link" href="#main">Skip to content</a>\n<header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Tayoca home">TAYOCA</a><nav class="primary-nav" aria-label="Primary navigation"><a href="/services.html">Services</a><a href="/assessments.html">Assessments</a><a href="/results.html">Results</a><a href="/products.html">Products</a><a href="/insights.html">Insights</a><a href="/about.html">About</a></nav></div></header>\n${body}\n<footer><strong>TAYOCA</strong><br>Ontario, Canada.</footer>\n<script defer src="/tayoca-site.js"></script>\n</body>\n</html>\n`;
 };
 
 const inputClass = 'app-input';
@@ -88,6 +89,7 @@ const labelClass = 'mb-1.5 block text-sm font-medium text-neutral-800 dark:text-
 
 export const ContentPage: React.FC = () => {
   const toast = useToast();
+  const [searchParams] = useSearchParams();
   const [files, setFiles] = useState<ContentEntry[]>([]);
   const [selected, setSelected] = useState<ContentDocument | null>(null);
   const [source, setSource] = useState('');
@@ -201,6 +203,19 @@ export const ContentPage: React.FC = () => {
       setBusy(false);
     }
   };
+
+  // Deep link: auto-open a content entry when arriving with ?path=...
+  const openEntryRef = useRef(openEntry);
+  openEntryRef.current = openEntry;
+
+  useEffect(() => {
+    const requestedPath = searchParams.get('path');
+    if (!requestedPath || files.length === 0) return;
+    const entry = files.find((f) => f.path === requestedPath);
+    if (entry && !selected && !creating) {
+      void openEntryRef.current(entry);
+    }
+  }, [searchParams, files, selected, creating]);
 
   const beginCreate = () => {
     if (!confirmDiscard()) return;

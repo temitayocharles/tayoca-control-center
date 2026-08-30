@@ -7,6 +7,8 @@ import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { CommandPalette } from './components/CommandPalette';
 import { useCommandPalette } from './hooks/useCommandPalette';
 import { useSettings } from './hooks/useSettings';
+import { useWorkflows } from './hooks/useN8n';
+import { useContentEntries } from './hooks/useContentEntries';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
@@ -39,13 +41,19 @@ const PageLoader: React.FC = () => (
 );
 
 const AppContent: React.FC = () => {
-  const { toggleTheme } = useTheme();
+  const { darkMode, toggleTheme } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   const { settings, updateSettings, resetSettings } = useSettings();
   const navigate = useNavigate();
+  const { data: workflows } = useWorkflows({ autoRefresh: false });
+  const { data: contentEntries } = useContentEntries();
   const commandPalette = useCommandPalette({
+    workflows: workflows?.map((workflow) => ({ id: workflow.id, name: workflow.name })),
+    content: contentEntries,
+    onToggleTheme: toggleTheme,
+    isDarkMode: darkMode,
     onRefresh: () => window.location.reload(),
   });
 
